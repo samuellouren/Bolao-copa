@@ -6,10 +6,20 @@ db.serialize(() => {
   db.run(`
         CREATE TABLE IF NOT EXISTS palpites (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuarioId INTEGER NOT NULL,
         jogoID INTEGER NOT NULL,
         placarCasa INTEGER NOT NULL,
         placarFora INTEGER NOT NULL,
         criadoEm TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+  db.run(`
+        CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        senha TEXT NOT NULL
         )
     `);
 });

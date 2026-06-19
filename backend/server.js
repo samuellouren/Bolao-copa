@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const bcrypt = require("bcryptjs");
+const validator = require("validator");
+const { criarToken, verificarToken } = require("./auth");
 const axios = require("axios");
 const db = require("./database");
 
@@ -60,6 +63,48 @@ app.get("/api/palpites", (req, res) => {
     }
     res.json(rows);
   });
+});
+
+app.post("/api/registro", async (req, res) => {
+  const { nome, email, senha } = req.body;
+
+  if (!validator.isEmail(email)) {
+    return res.status(400).json({ erro: "Email invalido" });
+  }
+
+  const senhaHash = await bcrypt.hash(senha, 10);
+
+  db.run(
+    "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
+    [nome, email, senhaHash],
+    function (err) {
+      if (err) {
+        return res.status(400).json({ erro: "Email ja cadastrado" });
+      }
+      res.json({ mensagem: "Usuario criado!", id: this.lastID });
+    },
+  );
+});
+
+app.post("/api/login", (req, res) => {
+  const { email, senha } = req.body;
+  db.get(
+    "SELECT * FROM usuarios WHERE email = ?",
+    [email],
+    async (err, usuario) => {
+      if (!usuario) {
+        return res.status(401).json({ erro: "Email ou Senha invalidos" });
+      }
+
+      const senhaValida = await bcrypt.compare(senha, usuario.senha);
+      if (!senhaValida) {
+        return res.status(401).json({ erro: "Email ou Senha invalidos" });
+      }
+
+      const token = criarToken(usuario);
+      res.json({ mensagem: "Login realizado!", token });
+    },
+  );
 });
 
 const PORT = process.env.PORT || 3001;
