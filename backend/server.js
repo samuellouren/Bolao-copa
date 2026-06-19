@@ -114,6 +114,63 @@ app.post("/api/login", (req, res) => {
   );
 });
 
+app.get("/api/pontuacao/:jogoId", verificarToken, async (req, res) => {
+  const { jogoId } = req.params;
+  const usuarioId = req.usuario.id;
+
+  db.get(
+    "SELECT * FROM palpites WHERE jogoId = ? AND usuarioId = ?",
+    [jogoId, usuarioId],
+    async (err, palpite) => {
+      if (!palpite) {
+        return res.status(404).json({ erro: "Palpite não encontrado" });
+      }
+
+      try {
+        const response = await axios.get(
+          `${process.env.FOOTBALL_API_URL}/matches/${jogoId}`,
+          { headers: { "X-Auth-Token": process.env.FOOTBALL_API_KEY } },
+        );
+
+        const placarCasaReal = response.data.score.fullTime.home;
+        const placarForaReal = response.data.score.fullTime.away;
+
+        if (placarCasaReal === null || placarForaReal === null) {
+          return res.json({ mensagem: "Jogo ainda não terminou", pontos: 0 });
+        }
+
+        let pontos = 0;
+
+        const acertouPlacar =
+          palpite.placarCasa === placarCasaReal &&
+          palpite.placarFora === placarForaReal;
+
+        const resultadoPalpite = Math.sign(
+          palpite.placarCasa - palpite.placarFora,
+        );
+        const resultadoReal = Math.sign(placarCasaReal - placarForaReal);
+        const acertouResultado = resultadoPalpite === resultadoReal;
+
+        if (acertouPlacar) {
+          pontos = 10;
+        } else if (acertouResultado) {
+          pontos = 5;
+        }
+
+        res.json({
+          pontos,
+          acertouPlacar,
+          acertouResultado,
+          placarReal: { casa: placarCasaReal, fora: placarForaReal },
+          palpite: { casa: palpite.placarCasa, fora: palpite.placarFora },
+        });
+      } catch (error) {
+        res.status(500).json({ erro: "Erro ao buscar resultado do jogo" });
+      }
+    },
+  );
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
