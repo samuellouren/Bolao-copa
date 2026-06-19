@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const axios = require("axios");
+const db = require("./database");
 
 const app = express();
 app.use(cors());
@@ -35,6 +36,30 @@ app.get("/api/jogos", async (req, res) => {
     console.error(error.message);
     res.status(500).json({ erro: "Erro ao buscar jogos" });
   }
+});
+
+app.post("/api/palpites", (req, res) => {
+  const { jogoId, placarCasa, placarFora } = req.body;
+
+  db.run(
+    "INSERT INTO palpites (jogoId, placarCasa, placarFora) VALUES (?, ?, ?)",
+    [jogoId, placarCasa, placarFora],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ erro: "Erro ao salvar palpite" });
+      }
+      res.json({ mensagem: "Palpite registrado", id: this.lastID });
+    },
+  );
+});
+
+app.get("/api/palpites", (req, res) => {
+  db.all("SELECT * FROM palpites", [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ erro: "Erro ao buscar palpites" });
+    }
+    res.json(rows);
+  });
 });
 
 const PORT = process.env.PORT || 3001;
