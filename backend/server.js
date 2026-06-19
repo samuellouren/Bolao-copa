@@ -171,6 +171,108 @@ app.get("/api/pontuacao/:jogoId", verificarToken, async (req, res) => {
   );
 });
 
+app.post("/api/processar-jogo/:jogoId", async (req, res) => {
+  const { jogoId } = req.params;
+
+  try {
+    // busca o resultado real do jogo
+    const response = await axios.get(
+      `${process.env.FOOTBALL_API_URL}/matches/${jogoId}`,
+      { headers: { "X-Auth-Token": process.env.FOOTBALL_API_KEY } },
+    );
+
+    const placarCasaReal = response.data.score.fullTime.home;
+    const placarForaReal = response.data.score.fullTime.away;
+
+    if (placarCasaReal === null || placarForaReal === null) {
+      return res.json({ mensagem: "Jogo ainda não terminou" });
+    }
+
+    const resultadoReal = Math.sign(placarCasaReal - placarForaReal);
+
+    // busca todos os palpites desse jogo
+    db.all(
+      "SELECT * FROM palpites WHERE jogoId = ?",
+      [jogoId],
+      (err, palpites) => {
+        if (err || palpites.length === 0) {
+          return res
+            .status(404)
+            .json({ erro: "Nenhum palpite encontrado para esse jogo" });
+        }
+
+        const acertaram = [];
+        const erraram = [];
+
+        palpites.forEach((palpite) => {
+          const resultadoPalpite = Math.sign(
+            palpite.placarCasa - palpite.placarFora,
+          );
+          const acertouPlacar =
+            palpite.placarCasa === placarCasaReal &&
+            palpite.placarFora === placarForaReal;
+          const acertouResultado = resultadoPalpite === resultadoReal;
+
+          let pontosBase = 0;
+          if (acertouPlacar) pontosBase = 10;
+          else if (acertouResultado) pontosBase = 5;
+
+          if (acertouResultado) {
+            acertaram.push({ ...palpite, pontosBase });
+          } else {
+            erraram.push({ ...palpite, pontosBase: -3 });
+          }
+        });
+
+        // distribui os pontos perdidos entre os que acertaram
+        const totalPerdido = erraram.length * 3;
+        const bonusPorAcerto =
+          acertaram.length > 0 ? totalPerdido / acertaram.length : 0;
+
+        const atualizacoes = [];
+
+        acertaram.forEach((p) => {
+          const pontosFinal = p.pontosBase + bonusPorAcerto;
+          atualizacoes.push({ id: p.id, pontos: pontosFinal });
+        });
+
+        erraram.forEach((p) => {
+          atualizacoes.push({ id: p.id, pontos: p.pontosBase });
+        });
+
+        // salva no banco
+        atualizacoes.forEach((u) => {
+          db.run("UPDATE palpites SET pontos = ? WHERE id = ?", [
+            u.pontos,
+            u.id,
+          ]);
+        });
+
+        res.json({ mensagem: "Jogo processado!", resultados: atualizacoes });
+      },
+    );
+  } catch (error) {
+    res.status(500).json({ erro: "Erro ao processar jogo" });
+  }
+});
+
+app.get("/api/ranking", (req, res) => {
+  db.all(
+    `SELECT usuarios.id, usuarios.nome, SUM(palpites.pontos) as totalPontos
+        FROM usuarios
+        LEFT JOIN palpites ON usuarios.id = palpites.usuarioId
+        GROUP BY usuarios.id
+        ORDER BY totalPontos DESC`,
+    [],
+    (err, ranking) => {
+      if (err) {
+        return res.status(500).json({ erro: "Erro ao buscar ranking" });
+      }
+      res.json(ranking);
+    },
+  );
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);

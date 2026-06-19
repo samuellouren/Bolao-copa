@@ -4,15 +4,16 @@ const db = new sqlite3.Database("./bolao.db");
 
 db.serialize(() => {
   db.run(`
-        CREATE TABLE IF NOT EXISTS palpites (
+    CREATE TABLE IF NOT EXISTS palpites (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         usuarioId INTEGER NOT NULL,
-        jogoID INTEGER NOT NULL,
+        jogoId INTEGER NOT NULL,
         placarCasa INTEGER NOT NULL,
         placarFora INTEGER NOT NULL,
+        pontos INTEGER DEFAULT NULL,
         criadoEm TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
+    )
+`);
 
   db.run(`
         CREATE TABLE IF NOT EXISTS usuarios (
