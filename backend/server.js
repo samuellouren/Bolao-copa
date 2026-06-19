@@ -41,12 +41,13 @@ app.get("/api/jogos", async (req, res) => {
   }
 });
 
-app.post("/api/palpites", (req, res) => {
+app.post("/api/palpites", verificarToken, (req, res) => {
   const { jogoId, placarCasa, placarFora } = req.body;
+  const usuarioId = req.usuario.id;
 
   db.run(
-    "INSERT INTO palpites (jogoId, placarCasa, placarFora) VALUES (?, ?, ?)",
-    [jogoId, placarCasa, placarFora],
+    "INSERT INTO palpites (usuarioId, jogoId, placarCasa, placarFora) VALUES (?, ?, ?, ?)",
+    [usuarioId, jogoId, placarCasa, placarFora],
     function (err) {
       if (err) {
         return res.status(500).json({ erro: "Erro ao salvar palpite" });
@@ -56,13 +57,19 @@ app.post("/api/palpites", (req, res) => {
   );
 });
 
-app.get("/api/palpites", (req, res) => {
-  db.all("SELECT * FROM palpites", [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ erro: "Erro ao buscar palpites" });
-    }
-    res.json(rows);
-  });
+app.get("/api/palpites", verificarToken, (req, res) => {
+  const usuarioId = req.usuario.id;
+
+  db.all(
+    "SELECT * FROM palpites WHERE usuarioId = ?",
+    [usuarioId],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ erro: "Erro ao buscar palpites" });
+      }
+      res.json(rows);
+    },
+  );
 });
 
 app.post("/api/registro", async (req, res) => {
