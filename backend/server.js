@@ -11,8 +11,11 @@ const db = require("./database");
 const app = express();
 // O Render fica atrás de um proxy; isso permite que o rate-limit identifique o IP real.
 app.set("trust proxy", 1);
-app.use(cors());
-app.use(express.json());
+// Restringe quem pode chamar a API à origem do frontend (definida no .env).
+// Sem FRONTEND_URL configurada, libera geral (útil em dev).
+app.use(cors({ origin: process.env.FRONTEND_URL || "*" }));
+// Limita o tamanho do corpo JSON; nenhuma rota precisa de mais que isso.
+app.use(express.json({ limit: "10kb" }));
 
 // Limita tentativas de registro/login: no máximo 10 por IP a cada 15 minutos.
 // Evita spam de cadastros e ataques de força bruta.
@@ -23,6 +26,33 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { erro: "Muitas tentativas. Tente novamente em 15 minutos." },
 });
+
+// Limita o envio de palpites: no máximo 30 por IP por minuto. Evita que um
+// usuário logado floode o banco com requisições repetidas.
+const palpiteLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: "Muitos palpites em pouco tempo. Aguarde um instante." },
+});
+
+// Protege rotas administrativas (ex: processar resultado de um jogo).
+// Exige o header x-admin-secret igual ao ADMIN_SECRET do .env.
+function verificarAdmin(req, res, next) {
+  const segredo = req.headers["x-admin-secret"];
+  if (!process.env.ADMIN_SECRET || segredo !== process.env.ADMIN_SECRET) {
+    return res.status(403).json({ erro: "Acesso negado" });
+  }
+  next();
+}
+
+// jogoId precisa ser um inteiro positivo. Evita 500 com lixo e impede
+// manipulação do path na chamada à API externa (ex: "../../algo").
+function jogoIdValido(valor) {
+  const n = Number(valor);
+  return Number.isInteger(n) && n > 0;
+}
 
 // Cache simples em memória dos jogos para não bater na API externa a cada request.
 let jogosCache = { dados: null, expira: 0 };
@@ -73,7 +103,7 @@ function placarValido(valor) {
   return Number.isInteger(valor) && valor >= 0 && valor <= 20;
 }
 
-app.post("/api/palpites", verificarToken, async (req, res) => {
+app.post("/api/palpites", palpiteLimiter, verificarToken, async (req, res) => {
   const { jogoId, placarCasa, placarFora } = req.body;
   const usuarioId = req.usuario.id;
 
@@ -84,28 +114,35 @@ app.post("/api/palpites", verificarToken, async (req, res) => {
   }
 
   try {
-    // Verifica se o jogo já começou (já tem placar definido). Se sim,
-    // ninguém pode mais palpitar/alterar. Usa o cache de jogos.
-    let jogoIniciado = false;
+    // Valida o jogo contra a lista oficial da API (servida pelo cache, que
+    // se atualiza a cada 5 min para não estourar o rate limit). Isso evita
+    // palpites em jogoId inventado e bloqueia jogos já iniciados.
+    let jogos;
     try {
-      const jogos = await buscarJogos();
-      const jogo = jogos.find((j) => j.id === Number(jogoId));
-      jogoIniciado = jogo ? jogo.placarCasa !== null : false;
+      jogos = await buscarJogos();
     } catch (error) {
       console.error("Não foi possível verificar o jogo:", error.message);
+      return res
+        .status(503)
+        .json({ erro: "Não foi possível validar o jogo, tente novamente" });
     }
 
-    // Um palpite por jogo por usuário: se já existe, atualizamos em vez de criar.
-    const existente = await db.execute({
-      sql: "SELECT id FROM palpites WHERE usuarioId = ? AND jogoId = ?",
-      args: [usuarioId, jogoId],
-    });
-
-    if (jogoIniciado) {
+    const jogo = jogos.find((j) => j.id === Number(jogoId));
+    if (!jogo) {
+      return res.status(400).json({ erro: "Jogo inválido" });
+    }
+    if (jogo.placarCasa !== null) {
       return res
         .status(400)
         .json({ erro: "Jogo já iniciado, não é possível alterar o palpite" });
     }
+
+    // Um palpite por jogo por usuário: se já existe, atualizamos em vez de criar.
+    // Usa jogo.id (já validado e numérico) para manter o tipo consistente.
+    const existente = await db.execute({
+      sql: "SELECT id FROM palpites WHERE usuarioId = ? AND jogoId = ?",
+      args: [usuarioId, jogo.id],
+    });
 
     if (existente.rows.length > 0) {
       const id = existente.rows[0].id;
@@ -118,7 +155,7 @@ app.post("/api/palpites", verificarToken, async (req, res) => {
 
     const resultado = await db.execute({
       sql: "INSERT INTO palpites (usuarioId, jogoId, placarCasa, placarFora) VALUES (?, ?, ?, ?)",
-      args: [usuarioId, jogoId, placarCasa, placarFora],
+      args: [usuarioId, jogo.id, placarCasa, placarFora],
     });
     res.json({
       mensagem: "Palpite registrado",
@@ -227,10 +264,14 @@ app.get("/api/pontuacao/:jogoId", verificarToken, async (req, res) => {
   const { jogoId } = req.params;
   const usuarioId = req.usuario.id;
 
+  if (!jogoIdValido(jogoId)) {
+    return res.status(400).json({ erro: "Jogo inválido" });
+  }
+
   try {
     const resultadoPalpite = await db.execute({
       sql: "SELECT * FROM palpites WHERE jogoId = ? AND usuarioId = ?",
-      args: [jogoId, usuarioId],
+      args: [Number(jogoId), usuarioId],
     });
     const palpite = resultadoPalpite.rows[0];
 
@@ -238,13 +279,16 @@ app.get("/api/pontuacao/:jogoId", verificarToken, async (req, res) => {
       return res.status(404).json({ erro: "Palpite não encontrado" });
     }
 
-    const response = await axios.get(
-      `${process.env.FOOTBALL_API_URL}/matches/${jogoId}`,
-      { headers: { "X-Auth-Token": process.env.FOOTBALL_API_KEY } },
-    );
+    // Usa o cache de jogos em vez de bater na API externa a cada request,
+    // evitando estourar a cota do football-data.org.
+    const jogos = await buscarJogos();
+    const jogo = jogos.find((j) => j.id === Number(jogoId));
+    if (!jogo) {
+      return res.status(404).json({ erro: "Jogo não encontrado" });
+    }
 
-    const placarCasaReal = response.data.score.fullTime.home;
-    const placarForaReal = response.data.score.fullTime.away;
+    const placarCasaReal = jogo.placarCasa;
+    const placarForaReal = jogo.placarFora;
 
     if (placarCasaReal === null || placarForaReal === null) {
       return res.json({ mensagem: "Jogo ainda não terminou", pontos: 0 });
@@ -278,12 +322,16 @@ app.get("/api/pontuacao/:jogoId", verificarToken, async (req, res) => {
   }
 });
 
-app.post("/api/processar-jogo/:jogoId", async (req, res) => {
+app.post("/api/processar-jogo/:jogoId", verificarAdmin, async (req, res) => {
   const { jogoId } = req.params;
+
+  if (!jogoIdValido(jogoId)) {
+    return res.status(400).json({ erro: "Jogo inválido" });
+  }
 
   try {
     const response = await axios.get(
-      `${process.env.FOOTBALL_API_URL}/matches/${jogoId}`,
+      `${process.env.FOOTBALL_API_URL}/matches/${Number(jogoId)}`,
       { headers: { "X-Auth-Token": process.env.FOOTBALL_API_KEY } },
     );
 
@@ -298,7 +346,7 @@ app.post("/api/processar-jogo/:jogoId", async (req, res) => {
 
     const resultadoPalpites = await db.execute({
       sql: "SELECT * FROM palpites WHERE jogoId = ?",
-      args: [jogoId],
+      args: [Number(jogoId)],
     });
     const palpites = resultadoPalpites.rows;
 
@@ -437,6 +485,22 @@ app.get("/api/perfil/detalhes", verificarToken, async (req, res) => {
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar detalhes do perfil" });
   }
+});
+
+// Handler global de erros: captura o que escapar dos try/catch (inclusive
+// JSON malformado ou corpo grande demais) e responde de forma padronizada,
+// sem vazar stack trace para o cliente.
+app.use((err, req, res, next) => {
+  if (err.type === "entity.parse.failed" || err instanceof SyntaxError) {
+    return res
+      .status(400)
+      .json({ erro: "JSON inválido no corpo da requisição" });
+  }
+  if (err.type === "entity.too.large") {
+    return res.status(413).json({ erro: "Requisição muito grande" });
+  }
+  console.error(err.message);
+  res.status(500).json({ erro: "Erro interno do servidor" });
 });
 
 const PORT = process.env.PORT || 3001;

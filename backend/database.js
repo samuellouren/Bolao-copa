@@ -26,6 +26,22 @@ async function criarTabelas() {
       criadoEm TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Garante no banco que existe no máximo 1 palpite por usuário por jogo.
+  // Protege contra duplicatas em requisições simultâneas (o upsert da
+  // aplicação não é atômico). Se já houver duplicatas antigas, a criação
+  // do índice falha; nesse caso limpe os registros repetidos e rode de novo.
+  try {
+    await db.execute(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_palpites_usuario_jogo
+      ON palpites (usuarioId, jogoId)
+    `);
+  } catch (error) {
+    console.error(
+      "Não foi possível criar índice único em palpites (há duplicatas?):",
+      error.message,
+    );
+  }
 }
 
 criarTabelas();
