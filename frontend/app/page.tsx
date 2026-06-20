@@ -22,7 +22,7 @@ export default function Home() {
   const [jogos, setJogos] = useState<Jogo[]>([]);
   const [carregando, setCarregando] = useState(true);
 
-  const [palpites, setPalpites] = useState<
+  const [palpites, setPalpites] = useState
     Record<number, { casa: string; fora: string }>
   >({});
   const [mensagens, setMensagens] = useState<Record<number, string>>({});
@@ -52,7 +52,7 @@ export default function Home() {
 
     try {
       await axios.post(
-        "https://bolao-copa-ad7t.onrender.com",
+        "https://bolao-copa-ad7t.onrender.com/api/palpites",
         {
           jogoId,
           placarCasa: Number(palpite.casa),
@@ -68,7 +68,7 @@ export default function Home() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/api/jogos")
+      .get("https://bolao-copa-ad7t.onrender.com/api/jogos")
       .then((response) => {
         setJogos(response.data);
         setCarregando(false);

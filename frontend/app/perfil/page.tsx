@@ -19,7 +19,7 @@ export default function PerfilPage() {
     const token = Cookies.get("token");
 
     axios
-      .get("http://localhost:3001/api/perfil", {
+      .get("https://bolao-copa-ad7t.onrender.com/api/perfil", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {

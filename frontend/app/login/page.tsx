@@ -16,10 +16,13 @@ export default function Login() {
     setErro("");
 
     try {
-      const response = await axios.post("http://localhost:3001/api/login", {
-        email,
-        senha,
-      });
+      const response = await axios.post(
+        "https://bolao-copa-ad7t.onrender.com/api/login",
+        {
+          email,
+          senha,
+        },
+      );
 
       Cookies.set("token", response.data.token, { expires: 7 });
       router.push("/");
@@ -41,7 +44,9 @@ export default function Login() {
               Chuta Que é Macumba
             </span>
           </h1>
-          <p className="mt-1 text-sm text-gray-400">Entra que o jogo já vai rolar 🍀</p>
+          <p className="mt-1 text-sm text-gray-400">
+            Entra que o jogo já vai rolar 🍀
+          </p>
         </div>
 
         <input

@@ -17,7 +17,7 @@ export default function Registro() {
     setErro("");
 
     try {
-      await axios.post("http://localhost:3001/api/registro", {
+      await axios.post("https://bolao-copa-ad7t.onrender.com/api/registro", {
         nome,
         email,
         senha,
