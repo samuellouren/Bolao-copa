@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chuta Que é Macumba ⚽",
+  title: "Chute do Vidente ⚽",
   description: "Bolão de palpites da Copa do Mundo 2026",
 };
 

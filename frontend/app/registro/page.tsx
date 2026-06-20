@@ -41,7 +41,7 @@ export default function Registro() {
           <h1 className="text-2xl font-bold tracking-tight">
             <span aria-hidden>⚽</span>{" "}
             <span className="bg-gradient-to-r from-green-400 via-yellow-300 to-green-400 bg-clip-text text-transparent">
-              Chuta Que é Macumba
+              Chute do Vidente
             </span>
           </h1>
           <p className="mt-1 text-sm text-gray-400">
@@ -95,7 +95,7 @@ export default function Registro() {
         </button>
 
         <p className="text-center text-sm text-gray-400">
-          Já é da macumba?{" "}
+          Já é vidente?{" "}
           <a
             href="/login"
             className="font-medium text-green-400 transition-colors hover:text-green-300"

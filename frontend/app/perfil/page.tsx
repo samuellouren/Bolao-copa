@@ -78,7 +78,7 @@ export default function PerfilPage() {
             <p className="text-4xl font-bold tabular-nums text-yellow-300">
               {perfil.totalPontos}
             </p>
-            <p className="mt-1 text-sm text-gray-400">Pontos da macumba</p>
+            <p className="mt-1 text-sm text-gray-400">Pontos do Vidente</p>
           </div>
         </div>
       </main>

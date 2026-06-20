@@ -58,7 +58,7 @@ export default function Resultados() {
             <span aria-hidden>📋</span> Resultados
           </h1>
           <p className="mt-1 text-gray-400">
-            A macumba pegou ou deu zebra? 🐴 ·{" "}
+            A magia pegou ou deu zebra? 🐴 ·{" "}
             <Link
               href="/"
               className="text-green-400 transition-colors hover:text-green-300"
@@ -70,7 +70,7 @@ export default function Resultados() {
 
         {jogosEncerrados.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-gray-400">
-            Ainda não rolou nenhum jogo. Segura a ansiedade, macumbeiro! 🔮
+            Ainda não rolou nenhum jogo. Segura a ansiedade, Vidente! 🔮
           </div>
         ) : (
           <div className="space-y-3">
