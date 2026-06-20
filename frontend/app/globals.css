@@ -32,3 +32,12 @@ body {
 ::selection {
   background: rgba(34, 197, 94, 0.35);
 }
+
+/* Rolagem horizontal sem barra visível (usado no menu em telas pequenas) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

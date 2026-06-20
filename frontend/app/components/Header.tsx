@@ -56,14 +56,14 @@ export default function Header() {
           </span>
         </Link>
 
-        <nav className="order-3 flex w-full gap-1 sm:order-none sm:w-auto">
+        <nav className="scrollbar-hide order-3 -mx-4 flex w-screen gap-1 overflow-x-auto px-4 sm:order-none sm:mx-0 sm:w-auto sm:px-0">
           {navItems.map((item) => {
             const ativo = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors sm:py-1.5 ${
                   ativo
                     ? "bg-green-500/15 text-green-300"
                     : "text-gray-400 hover:bg-white/5 hover:text-white"

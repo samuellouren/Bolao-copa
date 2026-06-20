@@ -144,9 +144,11 @@ export default function Home() {
                 </span>
               )}
 
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex flex-1 items-center justify-end gap-2 text-right">
-                  <span className="font-medium">{jogo.casa}</span>
+              <div className="flex items-center justify-between gap-2 sm:gap-3">
+                <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
+                  <span className="min-w-0 text-sm font-medium break-words sm:text-base">
+                    {jogo.casa}
+                  </span>
                   {jogo.casaEscudo && (
                     <Image
                       src={jogo.casaEscudo}
@@ -189,7 +191,7 @@ export default function Home() {
                       </div>
                       <button
                         onClick={() => enviarPalpite(jogo.id)}
-                        className="rounded-md bg-green-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-green-500"
+                        className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-500"
                       >
                         Cravar 🔮
                       </button>
@@ -202,7 +204,7 @@ export default function Home() {
                   )}
                 </div>
 
-                <div className="flex flex-1 items-center gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
                   {jogo.foraEscudo && (
                     <Image
                       src={jogo.foraEscudo}
@@ -212,7 +214,9 @@ export default function Home() {
                       className="shrink-0"
                     />
                   )}
-                  <span className="font-medium">{jogo.fora}</span>
+                  <span className="min-w-0 text-sm font-medium break-words sm:text-base">
+                    {jogo.fora}
+                  </span>
                 </div>
               </div>
             </div>

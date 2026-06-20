@@ -85,9 +85,11 @@ export default function Resultados() {
                   </span>
                 )}
 
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex flex-1 items-center justify-end gap-2 text-right">
-                    <span className="font-medium">{jogo.casa}</span>
+                <div className="flex items-center justify-between gap-2 sm:gap-3">
+                  <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
+                    <span className="min-w-0 text-sm font-medium break-words sm:text-base">
+                      {jogo.casa}
+                    </span>
                     {jogo.casaEscudo && (
                       <Image
                         src={jogo.casaEscudo}
@@ -106,7 +108,7 @@ export default function Resultados() {
                     </span>
                   </div>
 
-                  <div className="flex flex-1 items-center gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
                     {jogo.foraEscudo && (
                       <Image
                         src={jogo.foraEscudo}
@@ -116,7 +118,9 @@ export default function Resultados() {
                         className="shrink-0"
                       />
                     )}
-                    <span className="font-medium">{jogo.fora}</span>
+                    <span className="min-w-0 text-sm font-medium break-words sm:text-base">
+                      {jogo.fora}
+                    </span>
                   </div>
                 </div>
               </div>
