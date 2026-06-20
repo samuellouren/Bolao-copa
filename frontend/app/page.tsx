@@ -50,6 +50,14 @@ export default function Home() {
 
     const token = Cookies.get("token");
 
+    if (!token) {
+      setMensagens((prev) => ({
+        ...prev,
+        [jogoId]: "Faça login para cravar seu palpite",
+      }));
+      return;
+    }
+
     try {
       await axios.post(
         "https://bolao-copa-ad7t.onrender.com/api/palpites",
@@ -61,8 +69,15 @@ export default function Home() {
         { headers: { Authorization: `Bearer ${token}` } },
       );
       setMensagens((prev) => ({ ...prev, [jogoId]: "Palpite enviado!" }));
-    } catch {
-      setMensagens((prev) => ({ ...prev, [jogoId]: "Erro ao enviar palpite" }));
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number } };
+      setMensagens((prev) => ({
+        ...prev,
+        [jogoId]:
+          err.response?.status === 401
+            ? "Faça login para cravar seu palpite"
+            : "Erro ao enviar palpite",
+      }));
     }
   }
 
