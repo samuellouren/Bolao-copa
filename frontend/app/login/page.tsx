@@ -81,7 +81,7 @@ export default function Login() {
         </button>
 
         <p className="text-center text-sm text-gray-400">
-          Ainda não é da macumba?{" "}
+          Ainda não é vidente?{" "}
           <a
             href="/registro"
             className="font-medium text-green-400 transition-colors hover:text-green-300"
