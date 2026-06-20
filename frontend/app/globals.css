@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #0a0d0a;
+  --color-foreground: #ededed;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* App é dark-only. Fundo quase preto com brilhos verde e amarelo no topo
+   (verde-amarelo, vibe seleção brasileira). */
+body {
+  min-height: 100vh;
+  background-color: #0a0d0a;
+  background-image:
+    radial-gradient(
+      ellipse 60% 50% at 15% -10%,
+      rgba(34, 197, 94, 0.18),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 85% -5%,
+      rgba(250, 204, 21, 0.12),
+      transparent 70%
+    );
+  background-attachment: fixed;
+  color: #ededed;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Seleção de texto na cor de destaque */
+::selection {
+  background: rgba(34, 197, 94, 0.35);
+}
