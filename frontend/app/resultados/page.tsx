@@ -24,7 +24,7 @@ export default function Resultados() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/api/jogos")
+      .get("https://bolao-copa-ad7t.onrender.com")
       .then((response) => {
         setJogos(response.data);
         setCarregando(false);

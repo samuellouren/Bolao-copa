@@ -52,7 +52,7 @@ export default function Home() {
 
     try {
       await axios.post(
-        "http://localhost:3001/api/palpites",
+        "https://bolao-copa-ad7t.onrender.com",
         {
           jogoId,
           placarCasa: Number(palpite.casa),
