@@ -52,7 +52,7 @@ export default function Header() {
         >
           <span aria-hidden>⚽</span>{" "}
           <span className="bg-gradient-to-r from-green-400 via-yellow-300 to-green-400 bg-clip-text text-transparent">
-            Chuta Que é Macumba
+            Chute do Vidente
           </span>
         </Link>
 
