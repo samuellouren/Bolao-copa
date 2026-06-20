@@ -22,7 +22,7 @@ export default function Home() {
   const [jogos, setJogos] = useState<Jogo[]>([]);
   const [carregando, setCarregando] = useState(true);
 
-  const [palpites, setPalpites] = useState
+  const [palpites, setPalpites] = useState<
     Record<number, { casa: string; fora: string }>
   >({});
   const [mensagens, setMensagens] = useState<Record<number, string>>({});
