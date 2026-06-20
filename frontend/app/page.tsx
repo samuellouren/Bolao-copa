@@ -239,10 +239,20 @@ export default function Home() {
                       <button
                         onClick={() => enviarPalpite(jogo.id)}
                         disabled={temErro || incompleto}
-                        className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-green-600"
+                        title={
+                          incompleto
+                            ? "Preencha os dois placares para cravar"
+                            : undefined
+                        }
+                        className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-green-900/40 transition-colors hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-green-600"
                       >
                         Cravar 🔮
                       </button>
+                      {incompleto && !temErro && (
+                        <p className="text-center text-[11px] text-yellow-300/80">
+                          Preencha os dois placares para cravar
+                        </p>
+                      )}
                       {mensagens[jogo.id] && (
                         <p className="text-center text-[11px] text-gray-400">
                           {mensagens[jogo.id]}
