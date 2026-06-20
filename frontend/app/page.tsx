@@ -18,6 +18,13 @@ interface Jogo {
   placarFora: number | null;
 }
 
+// Um placar preenchido só é válido se for um número inteiro entre 0 e 20.
+// String vazia não é "inválida" (apenas ainda não preenchida).
+function placarInvalido(valor: string | undefined) {
+  if (!valor) return false;
+  return !/^\d{1,2}$/.test(valor) || Number(valor) > 20;
+}
+
 export default function Home() {
   const [jogos, setJogos] = useState<Jogo[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -32,9 +39,10 @@ export default function Home() {
     campo: "casa" | "fora",
     valor: string,
   ) {
+    // Limita a 2 caracteres; a validação visual (placarInvalido) cuida do resto.
     setPalpites((prev) => ({
       ...prev,
-      [jogoId]: { ...prev[jogoId], [campo]: valor },
+      [jogoId]: { ...prev[jogoId], [campo]: valor.slice(0, 2) },
     }));
   }
 
@@ -60,7 +68,7 @@ export default function Home() {
 
     try {
       await axios.post(
-        "https://bolao-copa-ad7t.onrender.com/api/palpites",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/palpites`,
         {
           jogoId,
           placarCasa: Number(palpite.casa),
@@ -83,7 +91,7 @@ export default function Home() {
 
   useEffect(() => {
     axios
-      .get("https://bolao-copa-ad7t.onrender.com/api/jogos")
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/jogos`)
       .then((response) => {
         setJogos(response.data);
         setCarregando(false);
@@ -148,7 +156,14 @@ export default function Home() {
         )}
 
         <div className="space-y-3">
-          {jogosAbertos.map((jogo) => (
+          {jogosAbertos.map((jogo) => {
+            const palpite = palpites[jogo.id];
+            const erroCasa = placarInvalido(palpite?.casa);
+            const erroFora = placarInvalido(palpite?.fora);
+            const temErro = erroCasa || erroFora;
+            const incompleto = !palpite?.casa || !palpite?.fora;
+
+            return (
             <div
               key={jogo.id}
               className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-green-500/40 sm:p-5"
@@ -185,28 +200,46 @@ export default function Home() {
                     <>
                       <div className="flex items-center gap-1.5">
                         <input
-                          type="number"
-                          min="0"
-                          value={palpites[jogo.id]?.casa ?? ""}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={2}
+                          aria-invalid={erroCasa}
+                          value={palpite?.casa ?? ""}
                           onChange={(e) =>
                             handlePalpiteChange(jogo.id, "casa", e.target.value)
                           }
-                          className="w-11 rounded-md border border-white/10 bg-white/5 p-1.5 text-center tabular-nums outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
+                          className={`w-11 rounded-md border bg-white/5 p-1.5 text-center tabular-nums outline-none transition focus:ring-2 ${
+                            erroCasa
+                              ? "border-red-500 focus:border-red-500 focus:ring-red-500/40"
+                              : "border-white/10 focus:border-green-500 focus:ring-green-500/40"
+                          }`}
                         />
                         <span className="text-gray-500">x</span>
                         <input
-                          type="number"
-                          min="0"
-                          value={palpites[jogo.id]?.fora ?? ""}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={2}
+                          aria-invalid={erroFora}
+                          value={palpite?.fora ?? ""}
                           onChange={(e) =>
                             handlePalpiteChange(jogo.id, "fora", e.target.value)
                           }
-                          className="w-11 rounded-md border border-white/10 bg-white/5 p-1.5 text-center tabular-nums outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
+                          className={`w-11 rounded-md border bg-white/5 p-1.5 text-center tabular-nums outline-none transition focus:ring-2 ${
+                            erroFora
+                              ? "border-red-500 focus:border-red-500 focus:ring-red-500/40"
+                              : "border-white/10 focus:border-green-500 focus:ring-green-500/40"
+                          }`}
                         />
                       </div>
+                      {temErro && (
+                        <p className="text-center text-[11px] text-red-400">
+                          Placar deve ser entre 0 e 20
+                        </p>
+                      )}
                       <button
                         onClick={() => enviarPalpite(jogo.id)}
-                        className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-500"
+                        disabled={temErro || incompleto}
+                        className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-green-600"
                       >
                         Cravar 🔮
                       </button>
@@ -235,7 +268,8 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </main>
     </>

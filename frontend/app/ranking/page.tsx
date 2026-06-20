@@ -16,7 +16,7 @@ export default function Ranking() {
 
   useEffect(() => {
     axios
-      .get("https://bolao-copa-ad7t.onrender.com/api/ranking")
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/ranking`)
       .then((response) => {
         setRanking(response.data);
         setCarregando(false);

@@ -44,7 +44,7 @@ export default function PerfilPage() {
     }
 
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    const base = "https://bolao-copa-ad7t.onrender.com";
+    const base = process.env.NEXT_PUBLIC_API_URL;
 
     Promise.all([
       axios.get(`${base}/api/perfil`, config),
@@ -124,7 +124,7 @@ export default function PerfilPage() {
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               {perfil.nome}
             </h1>
-            <p className="text-sm text-gray-400">Macumbeiro de palpite 🔮</p>
+            <p className="text-sm text-gray-400">Vidente de palpite 🔮</p>
           </div>
         </header>
 

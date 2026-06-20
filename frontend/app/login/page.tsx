@@ -17,7 +17,7 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        "https://bolao-copa-ad7t.onrender.com/api/login",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/login`,
         {
           email,
           senha,
@@ -53,6 +53,7 @@ export default function Login() {
           type="email"
           placeholder="Email"
           value={email}
+          maxLength={150}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-gray-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
           required
@@ -62,6 +63,7 @@ export default function Login() {
           type="password"
           placeholder="Senha"
           value={senha}
+          maxLength={72}
           onChange={(e) => setSenha(e.target.value)}
           className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-gray-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
           required

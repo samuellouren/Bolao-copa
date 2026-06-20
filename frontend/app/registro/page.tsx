@@ -17,7 +17,7 @@ export default function Registro() {
     setErro("");
 
     try {
-      await axios.post("https://bolao-copa-ad7t.onrender.com/api/registro", {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/registro`, {
         nome,
         email,
         senha,
@@ -53,6 +53,7 @@ export default function Registro() {
           type="text"
           placeholder="Nome"
           value={nome}
+          maxLength={100}
           onChange={(e) => setNome(e.target.value)}
           className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-gray-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
           required
@@ -62,6 +63,7 @@ export default function Registro() {
           type="email"
           placeholder="Email"
           value={email}
+          maxLength={150}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-gray-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
           required
@@ -71,6 +73,7 @@ export default function Registro() {
           type="password"
           placeholder="Senha"
           value={senha}
+          maxLength={72}
           onChange={(e) => setSenha(e.target.value)}
           className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-gray-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
           required
