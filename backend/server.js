@@ -41,29 +41,33 @@ app.get("/api/jogos", async (req, res) => {
   }
 });
 
-app.post("/api/palpites", verificarToken, (req, res) => {
+app.post("/api/palpites", verificarToken, async (req, res) => {
   const { jogoId, placarCasa, placarFora } = req.body;
   const usuarioId = req.usuario.id;
 
   try {
-    const stmt = db.prepare(
-      "INSERT INTO palpites (usuarioId, jogoId, placarCasa, placarFora) VALUES (?, ?, ?, ?)",
-    );
-    const info = stmt.run(usuarioId, jogoId, placarCasa, placarFora);
-    res.json({ mensagem: "Palpite registrado", id: info.lastInsertRowid });
+    const resultado = await db.execute({
+      sql: "INSERT INTO palpites (usuarioId, jogoId, placarCasa, placarFora) VALUES (?, ?, ?, ?)",
+      args: [usuarioId, jogoId, placarCasa, placarFora],
+    });
+    res.json({
+      mensagem: "Palpite registrado",
+      id: Number(resultado.lastInsertRowid),
+    });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao salvar palpite" });
   }
 });
 
-app.get("/api/palpites", verificarToken, (req, res) => {
+app.get("/api/palpites", verificarToken, async (req, res) => {
   const usuarioId = req.usuario.id;
 
   try {
-    const rows = db
-      .prepare("SELECT * FROM palpites WHERE usuarioId = ?")
-      .all(usuarioId);
-    res.json(rows);
+    const resultado = await db.execute({
+      sql: "SELECT * FROM palpites WHERE usuarioId = ?",
+      args: [usuarioId],
+    });
+    res.json(resultado.rows);
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar palpites" });
   }
@@ -78,11 +82,14 @@ app.post("/api/registro", async (req, res) => {
 
   try {
     const senhaHash = await bcrypt.hash(senha, 10);
-    const stmt = db.prepare(
-      "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
-    );
-    const info = stmt.run(nome, email, senhaHash);
-    res.json({ mensagem: "Usuario criado!", id: info.lastInsertRowid });
+    const resultado = await db.execute({
+      sql: "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
+      args: [nome, email, senhaHash],
+    });
+    res.json({
+      mensagem: "Usuario criado!",
+      id: Number(resultado.lastInsertRowid),
+    });
   } catch (error) {
     res.status(400).json({ erro: "Email ja cadastrado" });
   }
@@ -92,9 +99,11 @@ app.post("/api/login", async (req, res) => {
   const { email, senha } = req.body;
 
   try {
-    const usuario = db
-      .prepare("SELECT * FROM usuarios WHERE email = ?")
-      .get(email);
+    const resultado = await db.execute({
+      sql: "SELECT * FROM usuarios WHERE email = ?",
+      args: [email],
+    });
+    const usuario = resultado.rows[0];
 
     if (!usuario) {
       return res.status(401).json({ erro: "Email ou Senha invalidos" });
@@ -116,15 +125,17 @@ app.get("/api/pontuacao/:jogoId", verificarToken, async (req, res) => {
   const { jogoId } = req.params;
   const usuarioId = req.usuario.id;
 
-  const palpite = db
-    .prepare("SELECT * FROM palpites WHERE jogoId = ? AND usuarioId = ?")
-    .get(jogoId, usuarioId);
-
-  if (!palpite) {
-    return res.status(404).json({ erro: "Palpite não encontrado" });
-  }
-
   try {
+    const resultadoPalpite = await db.execute({
+      sql: "SELECT * FROM palpites WHERE jogoId = ? AND usuarioId = ?",
+      args: [jogoId, usuarioId],
+    });
+    const palpite = resultadoPalpite.rows[0];
+
+    if (!palpite) {
+      return res.status(404).json({ erro: "Palpite não encontrado" });
+    }
+
     const response = await axios.get(
       `${process.env.FOOTBALL_API_URL}/matches/${jogoId}`,
       { headers: { "X-Auth-Token": process.env.FOOTBALL_API_KEY } },
@@ -143,9 +154,9 @@ app.get("/api/pontuacao/:jogoId", verificarToken, async (req, res) => {
       palpite.placarCasa === placarCasaReal &&
       palpite.placarFora === placarForaReal;
 
-    const resultadoPalpite = Math.sign(palpite.placarCasa - palpite.placarFora);
+    const resultadoCalc = Math.sign(palpite.placarCasa - palpite.placarFora);
     const resultadoReal = Math.sign(placarCasaReal - placarForaReal);
-    const acertouResultado = resultadoPalpite === resultadoReal;
+    const acertouResultado = resultadoCalc === resultadoReal;
 
     if (acertouPlacar) {
       pontos = 10;
@@ -183,9 +194,11 @@ app.post("/api/processar-jogo/:jogoId", async (req, res) => {
 
     const resultadoReal = Math.sign(placarCasaReal - placarForaReal);
 
-    const palpites = db
-      .prepare("SELECT * FROM palpites WHERE jogoId = ?")
-      .all(jogoId);
+    const resultadoPalpites = await db.execute({
+      sql: "SELECT * FROM palpites WHERE jogoId = ?",
+      args: [jogoId],
+    });
+    const palpites = resultadoPalpites.rows;
 
     if (palpites.length === 0) {
       return res
@@ -231,12 +244,12 @@ app.post("/api/processar-jogo/:jogoId", async (req, res) => {
       atualizacoes.push({ id: p.id, pontos: p.pontosBase });
     });
 
-    const updateStmt = db.prepare(
-      "UPDATE palpites SET pontos = ? WHERE id = ?",
-    );
-    atualizacoes.forEach((u) => {
-      updateStmt.run(u.pontos, u.id);
-    });
+    for (const u of atualizacoes) {
+      await db.execute({
+        sql: "UPDATE palpites SET pontos = ? WHERE id = ?",
+        args: [u.pontos, u.id],
+      });
+    }
 
     res.json({ mensagem: "Jogo processado!", resultados: atualizacoes });
   } catch (error) {
@@ -244,38 +257,36 @@ app.post("/api/processar-jogo/:jogoId", async (req, res) => {
   }
 });
 
-app.get("/api/ranking", (req, res) => {
+app.get("/api/ranking", async (req, res) => {
   try {
-    const ranking = db
-      .prepare(
-        `SELECT usuarios.id, usuarios.nome, SUM(palpites.pontos) as totalPontos
-         FROM usuarios
-         LEFT JOIN palpites ON usuarios.id = palpites.usuarioId
-         GROUP BY usuarios.id
-         ORDER BY totalPontos DESC`,
-      )
-      .all();
-    res.json(ranking);
+    const resultado = await db.execute(`
+      SELECT usuarios.id, usuarios.nome, SUM(palpites.pontos) as totalPontos
+      FROM usuarios
+      LEFT JOIN palpites ON usuarios.id = palpites.usuarioId
+      GROUP BY usuarios.id
+      ORDER BY totalPontos DESC
+    `);
+    res.json(resultado.rows);
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar ranking" });
   }
 });
 
-app.get("/api/perfil", verificarToken, (req, res) => {
+app.get("/api/perfil", verificarToken, async (req, res) => {
   const usuarioId = req.usuario.id;
 
   try {
-    const resultado = db
-      .prepare(
-        `SELECT COUNT(*) as totalPalpites, SUM(pontos) as totalPontos
-         FROM palpites WHERE usuarioId = ?`,
-      )
-      .get(usuarioId);
+    const resultado = await db.execute({
+      sql: `SELECT COUNT(*) as totalPalpites, SUM(pontos) as totalPontos
+            FROM palpites WHERE usuarioId = ?`,
+      args: [usuarioId],
+    });
+    const dados = resultado.rows[0];
 
     res.json({
       nome: req.usuario.email,
-      totalPalpites: resultado.totalPalpites,
-      totalPontos: resultado.totalPontos ?? 0,
+      totalPalpites: dados.totalPalpites,
+      totalPontos: dados.totalPontos ?? 0,
     });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar perfil" });
