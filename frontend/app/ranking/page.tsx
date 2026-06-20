@@ -45,7 +45,7 @@ export default function Ranking() {
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             <span aria-hidden>🏆</span> Ranking
           </h1>
-          <p className="mt-1 text-gray-400">Quem tem o santo mais forte 🔮</p>
+          <p className="mt-1 text-gray-400">Quem tem o Santo mais forte 🔮</p>
         </header>
 
         <div className="space-y-2">
