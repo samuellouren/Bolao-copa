@@ -273,6 +273,25 @@ app.get("/api/ranking", (req, res) => {
   );
 });
 
+app.get("/api/perfil", verificarToken, (req, res) => {
+  const usuarioId = req.usuario.id;
+
+  db.get(
+    `SELECT COUNT(*) as totalPalpites, SUM(pontos) as totalPontos
+     FROM palpites WHERE usuarioId = ?`,
+    [usuarioId],
+    (err, resultado) => {
+      if (err) {
+        return res.status(500).json({ erro: "Erro ao buscar perfil" });
+      }
+      res.json({
+        nome: req.usuario.email,
+        totalPalpites: resultado.totalPalpites,
+        totalPontos: resultado.totalPontos ?? 0,
+      });
+    },
+  );
+});
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
