@@ -6,6 +6,7 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Header from "../components/Header";
+import { traduzirTime } from "@/lib/times";
 
 interface Perfil {
   nome: string;
@@ -191,12 +192,12 @@ export default function PerfilPage() {
                   <div className="flex items-center justify-between gap-2 sm:gap-3">
                     <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
                       <span className="min-w-0 text-sm font-medium break-words sm:text-base">
-                        {palpite.casa ?? "A definir"}
+                        {palpite.casa ? traduzirTime(palpite.casa) : "A definir"}
                       </span>
                       {palpite.casaEscudo && (
                         <Image
                           src={palpite.casaEscudo}
-                          alt={palpite.casa ?? ""}
+                          alt={traduzirTime(palpite.casa)}
                           width={28}
                           height={28}
                           className="shrink-0"
@@ -226,14 +227,14 @@ export default function PerfilPage() {
                       {palpite.foraEscudo && (
                         <Image
                           src={palpite.foraEscudo}
-                          alt={palpite.fora ?? ""}
+                          alt={traduzirTime(palpite.fora)}
                           width={28}
                           height={28}
                           className="shrink-0"
                         />
                       )}
                       <span className="min-w-0 text-sm font-medium break-words sm:text-base">
-                        {palpite.fora ?? "A definir"}
+                        {palpite.fora ? traduzirTime(palpite.fora) : "A definir"}
                       </span>
                     </div>
                   </div>

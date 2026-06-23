@@ -103,6 +103,19 @@ function placarValido(valor) {
   return Number.isInteger(valor) && valor >= 0 && valor <= 20;
 }
 
+// Antecedência mínima (em ms) para aceitar/alterar um palpite. Os palpites
+// fecham 5 minutos antes do horário marcado do jogo.
+const ANTECEDENCIA_MINIMA_MS = 5 * 60 * 1000;
+
+// Diz se o palpite ainda pode ser enviado/editado, comparando o horário
+// (utcDate) do jogo com o instante atual. Fecha 5 min antes do início.
+function palpitesEncerrados(dataDoJogo) {
+  if (!dataDoJogo) return false;
+  const inicio = new Date(dataDoJogo).getTime();
+  if (Number.isNaN(inicio)) return false;
+  return Date.now() >= inicio - ANTECEDENCIA_MINIMA_MS;
+}
+
 app.post("/api/palpites", palpiteLimiter, verificarToken, async (req, res) => {
   const { jogoId, placarCasa, placarFora } = req.body;
   const usuarioId = req.usuario.id;
@@ -135,6 +148,13 @@ app.post("/api/palpites", palpiteLimiter, verificarToken, async (req, res) => {
       return res
         .status(400)
         .json({ erro: "Jogo já iniciado, não é possível alterar o palpite" });
+    }
+    // Backend é a fonte de verdade: mesmo se a validação do frontend for
+    // burlada, rejeitamos palpites a menos de 5 min do início do jogo.
+    if (palpitesEncerrados(jogo.data)) {
+      return res
+        .status(400)
+        .json({ erro: "Palpites encerrados para esse jogo" });
     }
 
     // Um palpite por jogo por usuário: se já existe, atualizamos em vez de criar.

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
+import { traduzirTime } from "@/lib/times";
 
 interface Jogo {
   id: number;
@@ -88,12 +89,12 @@ export default function Resultados() {
                 <div className="flex items-center justify-between gap-2 sm:gap-3">
                   <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
                     <span className="min-w-0 text-sm font-medium break-words sm:text-base">
-                      {jogo.casa}
+                      {traduzirTime(jogo.casa)}
                     </span>
                     {jogo.casaEscudo && (
                       <Image
                         src={jogo.casaEscudo}
-                        alt={jogo.casa ?? ""}
+                        alt={traduzirTime(jogo.casa)}
                         width={28}
                         height={28}
                         className="shrink-0"
@@ -112,14 +113,14 @@ export default function Resultados() {
                     {jogo.foraEscudo && (
                       <Image
                         src={jogo.foraEscudo}
-                        alt={jogo.fora ?? ""}
+                        alt={traduzirTime(jogo.fora)}
                         width={28}
                         height={28}
                         className="shrink-0"
                       />
                     )}
                     <span className="min-w-0 text-sm font-medium break-words sm:text-base">
-                      {jogo.fora}
+                      {traduzirTime(jogo.fora)}
                     </span>
                   </div>
                 </div>
