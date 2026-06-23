@@ -42,6 +42,42 @@ async function criarTabelas() {
       error.message,
     );
   }
+
+  // Grupos privados de palpites. Cada grupo tem um código de convite curto e
+  // único (compartilhado entre amigos) e um criador (que administra o grupo).
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS grupos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      codigo_convite TEXT NOT NULL UNIQUE,
+      criador_id INTEGER NOT NULL,
+      criado_em TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Relação N:N entre grupos e usuários (quem participa de cada grupo).
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS grupo_membros (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      grupo_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
+      entrou_em TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Garante no banco que um usuário entra no máximo uma vez por grupo,
+  // protegendo contra requisições simultâneas que dupliquem a participação.
+  try {
+    await db.execute(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_grupo_membros_grupo_usuario
+      ON grupo_membros (grupo_id, usuario_id)
+    `);
+  } catch (error) {
+    console.error(
+      "Não foi possível criar índice único em grupo_membros (há duplicatas?):",
+      error.message,
+    );
+  }
 }
 
 criarTabelas();

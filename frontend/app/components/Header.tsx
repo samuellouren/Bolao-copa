@@ -15,6 +15,7 @@ const navItems = [
   { href: "/", label: "Jogos" },
   { href: "/resultados", label: "Resultados" },
   { href: "/ranking", label: "Ranking" },
+  { href: "/grupos", label: "Grupos" },
   { href: "/perfil", label: "Perfil" },
 ];
 
