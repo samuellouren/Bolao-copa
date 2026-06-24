@@ -238,6 +238,41 @@ app.get("/api/palpites", verificarToken, async (req, res) => {
   }
 });
 
+// Placar mais "cravado" pela galera em cada jogo (a moda dos palpites).
+// Read-only e 100% agregado: não expõe palpites individuais nem usuários, e
+// não toca na lógica de pontuação. Alimenta o "a galera crava X×Y" dos cards.
+// Público como /api/jogos (só devolve contagens, não dados sensíveis).
+app.get("/api/palpites/populares", async (req, res) => {
+  try {
+    const resultado = await db.execute(`
+      SELECT jogoId, placarCasa, placarFora, COUNT(*) AS total
+      FROM palpites
+      GROUP BY jogoId, placarCasa, placarFora
+    `);
+
+    // Para cada jogo, fica com o placar de maior contagem. A query já vem
+    // agrupada; aqui só reduzimos ao mais votado por jogo (desempate: o
+    // primeiro que aparecer, comportamento estável o suficiente para exibição).
+    const porJogo = new Map();
+    for (const linha of resultado.rows) {
+      const total = Number(linha.total);
+      const atual = porJogo.get(linha.jogoId);
+      if (!atual || total > atual.total) {
+        porJogo.set(linha.jogoId, {
+          jogoId: Number(linha.jogoId),
+          placarCasa: Number(linha.placarCasa),
+          placarFora: Number(linha.placarFora),
+          total,
+        });
+      }
+    }
+
+    res.json([...porJogo.values()]);
+  } catch (error) {
+    res.status(500).json({ erro: "Erro ao buscar palpites populares" });
+  }
+});
+
 app.post("/api/registro", authLimiter, async (req, res) => {
   const { nome, email, senha } = req.body;
 

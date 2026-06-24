@@ -8,13 +8,13 @@ import { useEffect, useState } from "react";
 
 // Frases místicas extraídas da direção visual do design.
 const FRASES_MISTICAS = [
-  "Os astros sussurram um empate amargo no jogo da França… ou era só fome minha?",
-  "Sinto uma zebra galopando pela rodada. Confie na intuição, não no figurinha.",
+  "Os astros sussurram um empate amargo no jogo… ou era só fome minha?",
+  "Sinto uma zebra galopando pela rodada. Confie na intuição, não so no obvio.",
   "A bola de cristal embaçou no clássico. Quando embaça, chute com o coração.",
   "Vejo… vejo… um gol nos acréscimos. Anote, mas não me processe se vier de pênalti.",
-  "Até vidente leva frango, querido. Humildade também pontua.",
+  "Até vidente erra, querido. Humildade também pontua.",
   "Os cristais brilham mais forte para quem crava cedo. A pressa, hoje, é amiga.",
-  "Quem está no topo do ranking que durma com um olho aberto. A roda gira, meu bem.",
+  "Quem está no topo do ranking que durma com um olho aberto. O mundo gira, meu bem.",
 ];
 
 interface MadamePlacarProps {
@@ -23,15 +23,21 @@ interface MadamePlacarProps {
   // "full": cartão completo com avatar e nome (destaque numa página).
   // "compacto": faixa enxuta para encaixar entre seções.
   variante?: "full" | "compacto";
+  // Se true, troca a frase suavemente de tempos em tempos (como o design),
+  // começando de um índice aleatório. Ignorado quando `frase` é fixa.
+  rotacionar?: boolean;
+  // Intervalo (ms) entre trocas quando `rotacionar` está ligado.
+  intervaloMs?: number;
   className?: string;
 }
 
 // Avatar da Madame: orbe violeta com a estrelinha ✦ de prestígio.
+// `flutua` faz a esfera levitar (sobe/desce) num loop suave.
 function Orbe({ tamanho = 44 }: { tamanho?: number }) {
   return (
     <span
       aria-hidden
-      className="relative flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-light to-violet-strong text-base text-white shadow-lg shadow-violet-strong/40"
+      className="flutua relative flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-light to-violet-strong text-base text-white shadow-lg shadow-violet-strong/40"
       style={{ width: tamanho, height: tamanho }}
     >
       🔮
@@ -45,24 +51,33 @@ function Orbe({ tamanho = 44 }: { tamanho?: number }) {
 export default function MadamePlacar({
   frase,
   variante = "full",
+  rotacionar = false,
+  intervaloMs = 6000,
   className = "",
 }: MadamePlacarProps) {
-  // Sorteia a frase só no cliente, depois da hidratação, para não dar
-  // mismatch entre o HTML do servidor e o do navegador.
-  const [fraseSorteada, setFraseSorteada] = useState<string | null>(
-    frase ?? null,
-  );
+  // Índice da frase atual. Começa em null (não sorteado) para o primeiro
+  // render bater com o HTML do servidor e não dar mismatch de hidratação.
+  const [indice, setIndice] = useState<number | null>(null);
 
   useEffect(() => {
     if (frase) return;
-    const aleatoria =
-      FRASES_MISTICAS[Math.floor(Math.random() * FRASES_MISTICAS.length)];
-    setFraseSorteada(aleatoria);
+    // Sorteia o ponto de partida só no cliente, após a hidratação.
+    setIndice(Math.floor(Math.random() * FRASES_MISTICAS.length));
   }, [frase]);
 
-  // Antes do sorteio (primeiro render no cliente), mostra a primeira frase
-  // como fallback estável.
-  const texto = fraseSorteada ?? FRASES_MISTICAS[0];
+  // Rotação opcional: avança a frase de tempos em tempos (como o design, que
+  // cicla as falas). Só roda no cliente e quando não há frase fixa.
+  useEffect(() => {
+    if (frase || !rotacionar) return;
+    const id = setInterval(() => {
+      setIndice((atual) => ((atual ?? 0) + 1) % FRASES_MISTICAS.length);
+    }, intervaloMs);
+    return () => clearInterval(id);
+  }, [frase, rotacionar, intervaloMs]);
+
+  // Frase fixa vence tudo. Senão, mostra a sorteada; antes do sorteio (primeiro
+  // render), cai na frase #0 como fallback estável.
+  const texto = frase ?? FRASES_MISTICAS[indice ?? 0];
 
   if (variante === "compacto") {
     return (
@@ -97,9 +112,13 @@ export default function MadamePlacar({
           </p>
         </div>
       </div>
-      <p className="relative mt-4 font-oracle text-[15px] leading-relaxed text-lav sm:text-base">
+      <p
+        key={texto}
+        className="relative mt-4 font-oracle text-[15px] leading-relaxed text-lav transition-opacity duration-500 sm:text-base"
+      >
         “{texto}”
       </p>
+      <p className="relative mt-2.5 text-[11px] text-muted">— Madame Placar</p>
     </div>
   );
 }

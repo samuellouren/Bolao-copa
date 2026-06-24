@@ -103,6 +103,28 @@ body {
   animation: cintilar 3.2s ease-in-out infinite;
 }
 
+/* Flutuar: sobe e desce suave (a esfera/avatar da Madame "levita"). */
+@keyframes flutuar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.flutua {
+  animation: flutuar 5s ease-in-out infinite;
+}
+
+/* Respeita quem prefere menos movimento: trava as animações decorativas. */
+@media (prefers-reduced-motion: reduce) {
+  .estrela,
+  .flutua {
+    animation: none;
+  }
+}
+
 /* Rolagem horizontal sem barra visível (usado no menu em telas pequenas) */
 .scrollbar-hide {
   -ms-overflow-style: none;
