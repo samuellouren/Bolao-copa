@@ -11,7 +11,7 @@ const FRASES_MISTICAS = [
   "Os astros sussurram um empate amargo no jogo… ou era só fome minha?",
   "Sinto uma zebra galopando pela rodada. Confie na intuição, não so no obvio.",
   "A bola de cristal embaçou no clássico. Quando embaça, chute com o coração.",
-  "Vejo… vejo… um gol nos acréscimos. Anote, mas não me processe se vier de pênalti.",
+  "Vejo… vejo… um gol nos acréscimos. Anote, mas não me processe se vier aos pênaltis.",
   "Até vidente erra, querido. Humildade também pontua.",
   "Os cristais brilham mais forte para quem crava cedo. A pressa, hoje, é amiga.",
   "Quem está no topo do ranking que durma com um olho aberto. O mundo gira, meu bem.",
