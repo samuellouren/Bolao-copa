@@ -300,10 +300,12 @@ export default function Home() {
         <section className="min-w-0">
           <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 <span aria-hidden>🔮</span>{" "}
-                <span className="bg-gradient-to-r from-violet-light via-gold to-violet-light bg-clip-text text-transparent">
-                  Chute do Vidente
+                Chute do{" "}
+                {/* "Vidente" em serif itálico dourado, como no design. */}
+                <span className="font-oracle font-medium text-gold">
+                  Vidente
                 </span>
               </h1>
               <p className="mt-1 text-muted">

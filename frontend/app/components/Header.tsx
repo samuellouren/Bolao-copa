@@ -107,8 +107,11 @@ export default function Header() {
           className="flex items-center gap-1.5 text-lg font-bold tracking-tight transition-opacity hover:opacity-80"
         >
           <span aria-hidden>🔮</span>
-          <span className="font-display bg-gradient-to-r from-violet-light via-gold to-violet-light bg-clip-text text-transparent">
-            Chute do Vidente
+          {/* "Vidente" recebe o tratamento do design: serif itálico dourado
+              (font-oracle + text-gold), enquanto "Chute do" fica sans claro. */}
+          <span className="font-display font-extrabold tracking-tight text-foreground">
+            Chute do{" "}
+            <span className="font-oracle font-medium text-gold">Vidente</span>
           </span>
         </Link>
 
