@@ -50,6 +50,25 @@ export function calcularNivel(cristais: number): Nivel {
   return resultado;
 }
 
+// Sequência de "cravadas" (palpites certeiros) mais recentes: ordena os
+// palpites já avaliados por jogo (proxy cronológico) e conta, do mais novo pro
+// mais antigo, quantos pontuaram (> 0) seguidos. Usada tanto no card "Seus
+// Poderes" da sidebar quanto na grade de estatísticas do perfil.
+export function calcularCravadasSeguidas(
+  detalhes: { jogoId: number; pontos: number | null }[],
+): number {
+  const avaliados = detalhes
+    .filter((d) => d.pontos !== null)
+    .sort((a, b) => a.jogoId - b.jogoId);
+
+  let streak = 0;
+  for (let i = avaliados.length - 1; i >= 0; i--) {
+    if ((avaliados[i].pontos ?? 0) > 0) streak++;
+    else break;
+  }
+  return streak;
+}
+
 // Premonição = taxa de acerto: (corretos / avaliados) * 100, arredondada.
 // Só considera palpites já avaliados (jogos encerrados). Sem avaliados ainda,
 // devolve null — o frontend mostra "—" em vez de um 0% injusto.

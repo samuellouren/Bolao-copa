@@ -6,9 +6,10 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
+import MadamePlacar from "../components/MadamePlacar";
 import {
   calcularCristais,
+  calcularCravadasSeguidas,
   calcularNivel,
   calcularPremonicao,
   formatarCristais,
@@ -130,11 +131,14 @@ export default function PerfilPage() {
     perfil.palpitesCorretos ?? 0,
     perfil.palpitesAvaliados ?? 0,
   );
+  // Sequência de acertos mais recente (mesmo cálculo que ficava no card "Seus
+  // Poderes" da sidebar, agora exposto aqui no corpo do perfil).
+  const cravadasSeguidas = calcularCravadasSeguidas(detalhes);
 
   return (
     <>
       <Header />
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-10 text-white sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-10 text-white sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
         {/* COLUNA PRINCIPAL — conteúdo */}
         <section className="min-w-0">
         <header className="mb-6 flex items-center gap-4">
@@ -155,7 +159,7 @@ export default function PerfilPage() {
         </header>
 
         {/* Stats gamificadas (camada visual sobre os pontos reais do banco). */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <div className="rounded-xl border border-gold/25 bg-gold/[0.06] p-5 text-center">
             <p className="font-display text-3xl font-bold tabular-nums text-gold">
               <span aria-hidden className="mr-0.5 text-xl">
@@ -182,6 +186,15 @@ export default function PerfilPage() {
               {perfil.totalPontos}
             </p>
             <p className="mt-1 text-xs text-muted">Pontos do Vidente</p>
+          </div>
+          <div className="rounded-xl border border-violet/25 bg-violet/[0.06] p-5 text-center">
+            <p className="font-display text-3xl font-bold tabular-nums text-violet-light">
+              <span aria-hidden className="mr-0.5 text-xl">
+                🔥
+              </span>
+              {cravadasSeguidas}
+            </p>
+            <p className="mt-1 text-xs text-muted">Cravadas seguidas</p>
           </div>
         </div>
 
@@ -295,8 +308,11 @@ export default function PerfilPage() {
         </section>
         </section>
 
-        {/* SIDEBAR — Madame Placar + Seus Poderes (sticky no desktop) */}
-        <Sidebar />
+        {/* SIDEBAR — só a Madame compacta (os próprios números do vidente já
+            estão em destaque no corpo, então dispensa o card "Seus Poderes"). */}
+        <aside className="lg:sticky lg:top-24">
+          <MadamePlacar variante="compacto" rotacionar />
+        </aside>
       </main>
     </>
   );

@@ -5,7 +5,10 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
-import { calcularPremonicao } from "@/lib/gamificacao";
+import {
+  calcularPremonicao,
+  calcularCravadasSeguidas,
+} from "@/lib/gamificacao";
 
 // Card "Seus Poderes" da sidebar do design: anel de progresso da rodada +
 // três estatísticas (posição no bolão, cravadas seguidas, premonição %).
@@ -47,22 +50,6 @@ interface PerfilResp {
 interface PalpiteDetalhe {
   jogoId: number;
   pontos: number | null;
-}
-
-// Sequência de "cravadas" (palpites certeiros) mais recentes: ordena os
-// palpites já avaliados por jogo (proxy cronológico) e conta, do mais novo
-// pro mais antigo, quantos pontuaram (> 0) em seguida.
-function calcularCravadasSeguidas(detalhes: PalpiteDetalhe[]): number {
-  const avaliados = detalhes
-    .filter((d) => d.pontos !== null)
-    .sort((a, b) => a.jogoId - b.jogoId);
-
-  let streak = 0;
-  for (let i = avaliados.length - 1; i >= 0; i--) {
-    if ((avaliados[i].pontos ?? 0) > 0) streak++;
-    else break;
-  }
-  return streak;
 }
 
 export default function SeusPoderes({

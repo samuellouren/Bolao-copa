@@ -8,7 +8,7 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import Header from "../../components/Header";
 import RankingList from "../../components/RankingList";
-import Sidebar from "../../components/Sidebar";
+import MadamePlacar from "../../components/MadamePlacar";
 
 interface TokenPayload {
   id: number;
@@ -219,7 +219,7 @@ export default function GrupoDetalhePage() {
   return (
     <>
       <Header />
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-10 text-white sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-10 text-white sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
         {/* COLUNA PRINCIPAL — conteúdo */}
         <section className="min-w-0">
         <Link
@@ -334,8 +334,11 @@ export default function GrupoDetalhePage() {
         </section>
         </section>
 
-        {/* SIDEBAR — Madame Placar + Seus Poderes (sticky no desktop) */}
-        <Sidebar />
+        {/* SIDEBAR — só a Madame compacta (o ranking do grupo já está no
+            conteúdo, então dispensa o card "Seus Poderes"). */}
+        <aside className="lg:sticky lg:top-24">
+          <MadamePlacar variante="compacto" rotacionar />
+        </aside>
       </main>
 
       {/* Modal de confirmação */}
