@@ -35,12 +35,13 @@ function iniciais(nome: string): string {
   return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
 }
 
+// O "Perfil" saiu do menu: o acesso à conta agora é o avatar de iniciais à
+// direita (clicável, leva pra /perfil).
 const navItems = [
   { href: "/", label: "Jogos" },
   { href: "/resultados", label: "Resultados" },
   { href: "/ranking", label: "Ranking" },
   { href: "/grupos", label: "Grupos" },
-  { href: "/perfil", label: "Perfil" },
 ];
 
 export default function Header() {
@@ -132,8 +133,7 @@ export default function Header() {
 
         {usuario ? (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Chips de stats (gamificação visual sobre os pontos reais):
-                cristais ✦ · premonição % · nível + avatar com iniciais.
+            {/* Chips de cristais e premonição (visual sobre os pontos reais).
                 Ocultos em /perfil, onde os mesmos números já aparecem no corpo. */}
             {stats && !ocultarStats && (
               <div className="hidden items-center gap-2 sm:flex">
@@ -158,30 +158,37 @@ export default function Header() {
                     {stats.premonicao === null ? "—" : `${stats.premonicao}%`}
                   </span>
                 </span>
-                <span
-                  className="flex items-center gap-2 rounded-full border border-violet/30 bg-violet/10 py-1 pl-1 pr-3"
-                  title={`Nível ${stats.nivel.numero} · ${stats.nivel.titulo}`}
-                >
-                  <span
-                    aria-hidden
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-light to-violet-strong text-[11px] font-bold uppercase text-white shadow-sm shadow-violet-strong/40"
-                  >
-                    {stats.nome ? iniciais(stats.nome) : "🔮"}
-                  </span>
-                  <span className="flex flex-col leading-tight">
-                    <span className="text-[11px] font-semibold text-white">
-                      Nível {stats.nivel.numero}
-                    </span>
-                    <span className="text-[10px] text-violet-soft">
-                      {stats.nivel.titulo}
-                    </span>
-                  </span>
-                </span>
               </div>
             )}
-            <span className="hidden max-w-[140px] truncate text-sm text-muted lg:inline">
-              {usuario.email}
-            </span>
+
+            {/* Avatar de iniciais + nível: acesso à conta (clica e vai pra
+                /perfil). É o único "atalho de perfil" agora que o item saiu do
+                menu. O nível ao lado some em /perfil pra não duplicar. */}
+            <Link
+              href="/perfil"
+              title="Sua conta"
+              aria-label="Abrir meu perfil"
+              className="flex items-center gap-2 rounded-full border border-violet/30 bg-violet/10 py-1 pl-1 pr-1.5 transition-colors hover:border-violet/60 hover:bg-violet/20 sm:pr-3"
+            >
+              <span
+                aria-hidden
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-light to-violet-strong text-[11px] font-bold uppercase text-white shadow-sm shadow-violet-strong/40"
+              >
+                {stats?.nome
+                  ? iniciais(stats.nome)
+                  : usuario.email.charAt(0).toUpperCase()}
+              </span>
+              {stats && !ocultarStats && (
+                <span className="hidden flex-col leading-tight sm:flex">
+                  <span className="text-[11px] font-semibold text-white">
+                    Nível {stats.nivel.numero}
+                  </span>
+                  <span className="text-[10px] text-violet-soft">
+                    {stats.nivel.titulo}
+                  </span>
+                </span>
+              )}
+            </Link>
             <button
               onClick={handleLogout}
               className="rounded-md border border-white/10 px-3 py-1.5 text-sm font-medium text-lav transition-colors hover:border-magenta/40 hover:bg-magenta/10 hover:text-magenta-soft"

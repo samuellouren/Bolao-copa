@@ -85,7 +85,7 @@ export default function MadamePlacar({
         className={`flex items-start gap-3 rounded-2xl border border-violet/20 bg-violet/[0.07] px-4 py-3 ${className}`}
       >
         <Orbe tamanho={34} />
-        <p className="font-oracle text-sm leading-snug text-foreground sm:text-[15px]">
+        <p className="font-oracle text-sm leading-snug text-[#f0ecff] sm:text-[15px]">
           “{texto}”
         </p>
       </div>
@@ -94,7 +94,7 @@ export default function MadamePlacar({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-violet/25 bg-gradient-to-br from-elevated/80 to-surface/60 p-5 ${className}`}
+      className={`relative overflow-hidden rounded-[22px] border border-violet/25 bg-gradient-to-b from-elevated to-[#171436] p-6 shadow-[0_24px_50px_-28px_rgba(0,0,0,0.8)] ${className}`}
     >
       {/* Brilho de fundo */}
       <span
@@ -112,13 +112,17 @@ export default function MadamePlacar({
           </p>
         </div>
       </div>
-      <p
-        key={texto}
-        className="relative mt-4 font-oracle text-[15px] leading-relaxed text-foreground transition-opacity duration-500 sm:text-base"
-      >
-        “{texto}”
-      </p>
-      <p className="relative mt-2.5 text-[11px] text-muted">— Madame Placar</p>
+      {/* Caixa interna da frase (como o design): leve fundo claro para separar a
+          fala do cartão e garantir contraste — a cor #f0ecff é a do oráculo. */}
+      <div className="relative mt-4 rounded-[14px] border border-white/[0.08] bg-white/[0.04] px-4 py-3.5">
+        <p
+          key={texto}
+          className="font-oracle text-[15.5px] leading-relaxed text-[#f0ecff] transition-opacity duration-500"
+        >
+          “{texto}”
+        </p>
+        <p className="mt-2.5 text-[11px] text-muted">— Madame Placar</p>
+      </div>
     </div>
   );
 }

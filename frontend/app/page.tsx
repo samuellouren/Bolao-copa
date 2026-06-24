@@ -295,10 +295,10 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 text-white sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-10 text-white sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         {/* COLUNA PRINCIPAL — conteúdo */}
         <section className="min-w-0">
-          <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
                 <span aria-hidden>🔮</span>{" "}
@@ -325,7 +325,7 @@ export default function Home() {
             {/* Contador do próximo portal a fechar, nomeando o jogo específico.
                 Ao fechar, escorrega sozinho para o próximo jogo da fila. */}
             {contagem && proximoJogo && (
-              <div className="flex items-center gap-2.5 rounded-xl border border-magenta/30 bg-magenta/[0.08] px-4 py-2.5">
+              <div className="aura-portal flex items-center gap-2.5 rounded-[14px] border border-magenta/30 bg-magenta/[0.08] px-4 py-2.5">
                 <span className="text-[11px] uppercase tracking-wide text-magenta-soft">
                   Portal de {traduzirTime(proximoJogo.casa)} ×{" "}
                   {traduzirTime(proximoJogo.fora)} fecha em
@@ -350,7 +350,7 @@ export default function Home() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
             {jogosAbertos.map((jogo) => {
               const palpite = palpites[jogo.id];
               const erroCasa = placarInvalido(palpite?.casa);
@@ -381,10 +381,10 @@ export default function Home() {
               return (
                 <div
                   key={jogo.id}
-                  className={`flex flex-col gap-3.5 rounded-2xl border bg-gradient-to-b from-surface-2 to-surface p-4 transition-colors sm:p-5 ${
+                  className={`flex flex-col gap-3.5 rounded-[18px] border bg-gradient-to-b from-surface-2 to-surface p-5 shadow-[0_16px_36px_-24px_rgba(0,0,0,0.7)] transition-all ${
                     mostrarResumo
-                      ? "border-grass/30"
-                      : "border-white/10 hover:border-violet/40"
+                      ? "border-grass/30 shadow-[0_16px_36px_-24px_rgba(75,227,160,0.35)]"
+                      : "border-white/[0.08] hover:border-violet/50 hover:shadow-[0_18px_40px_-20px_rgba(122,82,200,0.5)]"
                   }`}
                 >
                   {/* Topo: grupo · horário + selo de status */}
@@ -567,10 +567,10 @@ export default function Home() {
                               }))
                             }
                             aria-pressed={ativo}
-                            className={`rounded-full border px-2.5 py-1 text-[10.5px] font-semibold transition-colors ${
+                            className={`rounded-full border px-2.5 py-1 text-[10.5px] font-semibold transition-all ${
                               ativo
-                                ? "border-gold bg-gold/15 text-gold"
-                                : "border-white/10 bg-white/[0.03] text-muted hover:border-gold/40 hover:text-lav"
+                                ? "border-gold bg-gold text-[#1a1330] shadow-[0_0_14px_rgba(242,193,78,0.4)]"
+                                : "border-white/[0.14] bg-white/[0.04] text-[#a3a7d4] hover:border-gold/40 hover:text-lav"
                             }`}
                           >
                             {rotulo}

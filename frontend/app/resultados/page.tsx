@@ -54,10 +54,10 @@ export default function Resultados() {
   return (
     <>
       <Header />
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 text-white sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-10 text-white sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         {/* COLUNA PRINCIPAL — conteúdo */}
         <section className="min-w-0">
-          <header className="mb-6">
+          <header className="mb-8">
             <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
               <span aria-hidden>📜</span> Resultados
             </h1>
@@ -77,11 +77,11 @@ export default function Resultados() {
               Ainda não rolou nenhum jogo. Segura a ansiedade, Vidente! 🔮
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
               {jogosEncerrados.map((jogo) => (
                 <div
                   key={jogo.id}
-                  className="flex flex-col gap-3.5 rounded-2xl border border-white/10 bg-gradient-to-b from-surface-2 to-surface p-4 transition-colors hover:border-violet/40 sm:p-5"
+                  className="flex flex-col gap-3.5 rounded-[18px] border border-white/[0.08] bg-gradient-to-b from-surface-2 to-surface p-5 shadow-[0_16px_36px_-24px_rgba(0,0,0,0.7)] transition-all hover:border-violet/50 hover:shadow-[0_18px_40px_-20px_rgba(122,82,200,0.5)]"
                 >
                   {/* Topo: grupo + selo "Encerrado" (mesmo padrão dos cards de Jogos) */}
                   <div className="flex items-center justify-between gap-2">

@@ -134,7 +134,7 @@ export default function PerfilPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 text-white sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-10 text-white sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         {/* COLUNA PRINCIPAL — conteúdo */}
         <section className="min-w-0">
         <header className="mb-6 flex items-center gap-4">
