@@ -82,6 +82,15 @@ export default function Login() {
           Consultar os astros
         </button>
 
+        <p className="text-center text-sm">
+          <a
+            href="/esqueci-senha"
+            className="font-medium text-violet-light transition-colors hover:text-gold"
+          >
+            Esqueci minha senha
+          </a>
+        </p>
+
         <p className="text-center text-sm text-muted">
           Ainda não é vidente?{" "}
           <a

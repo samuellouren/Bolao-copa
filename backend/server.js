@@ -5,8 +5,10 @@ const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const rateLimit = require("express-rate-limit");
 const { criarToken, verificarToken } = require("./auth");
+const crypto = require("crypto");
 const axios = require("axios");
 const db = require("./database");
+const { enviarEmailRecuperacao } = require("./email");
 
 const app = express();
 // O Render fica atrás de um proxy; isso permite que o rate-limit identifique o IP real.
@@ -25,6 +27,18 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { erro: "Muitas tentativas. Tente novamente em 15 minutos." },
+});
+
+// Limita pedidos de recuperação de senha: no máximo 3 por IP por hora.
+// Evita que a rota seja usada para floodar caixas de entrada com e-mails.
+const recuperarLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    erro: "Muitas solicitações de recuperação. Tente novamente em 1 hora.",
+  },
 });
 
 // Limita o envio de palpites: no máximo 30 por IP por minuto. Evita que um
@@ -350,6 +364,129 @@ app.post("/api/login", authLimiter, async (req, res) => {
     res.json({ mensagem: "Login realizado!", token });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao fazer login" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// RECUPERAÇÃO DE SENHA
+// Fluxo "esqueci minha senha": o usuário pede um link por e-mail (token único,
+// válido por 30 min, uso único) e depois define uma nova senha com esse token.
+// ---------------------------------------------------------------------------
+
+// Validade do token de recuperação: 30 minutos.
+const RECUPERACAO_VALIDADE_MS = 30 * 60 * 1000;
+
+// Mensagem sempre genérica: nunca revelamos se o e-mail existe ou não, para
+// não permitir enumeração de contas cadastradas.
+const MENSAGEM_GENERICA = {
+  mensagem:
+    "Se esse e-mail estiver cadastrado, enviamos um link para redefinir a senha.",
+};
+
+// Passo 1: solicitar o link. Recebe o e-mail e — só se existir um usuário —
+// gera o token, salva e dispara o e-mail. A resposta é idêntica em qualquer
+// caso (existindo ou não o e-mail).
+app.post("/api/recuperar-senha", recuperarLimiter, async (req, res) => {
+  const { email } = req.body;
+
+  // Validação leve; mesmo entradas inválidas recebem a resposta genérica para
+  // não vazar informação por diferença de comportamento.
+  if (
+    typeof email === "string" &&
+    email.length <= 150 &&
+    validator.isEmail(email)
+  ) {
+    try {
+      const resultado = await db.execute({
+        sql: "SELECT id FROM usuarios WHERE email = ?",
+        args: [email],
+      });
+      const usuario = resultado.rows[0];
+
+      if (usuario) {
+        // Token imprevisível: 32 bytes aleatórios criptográficos em hex.
+        const token = crypto.randomBytes(32).toString("hex");
+        const expiraEm = new Date(
+          Date.now() + RECUPERACAO_VALIDADE_MS,
+        ).toISOString();
+
+        await db.execute({
+          sql: "INSERT INTO tokens_recuperacao (usuario_id, token, expira_em) VALUES (?, ?, ?)",
+          args: [usuario.id, token, expiraEm],
+        });
+
+        // O link aponta para o frontend (página /redefinir-senha). Usa
+        // FRONTEND_URL para funcionar igual em produção e em dev.
+        const base = process.env.FRONTEND_URL || "http://localhost:3000";
+        const link = `${base.replace(/\/$/, "")}/redefinir-senha?token=${token}`;
+
+        try {
+          await enviarEmailRecuperacao(email, link);
+        } catch (erroEmail) {
+          // Falha de envio não deve revelar nada ao cliente; logamos no servidor.
+          console.error(
+            "Erro ao enviar e-mail de recuperação:",
+            erroEmail.message,
+          );
+        }
+      }
+    } catch (error) {
+      // Mesmo em erro interno respondemos genericamente; logamos para diagnóstico.
+      console.error("Erro ao processar recuperação de senha:", error.message);
+    }
+  }
+
+  res.json(MENSAGEM_GENERICA);
+});
+
+// Passo 2: redefinir a senha. Recebe o token e a nova senha. Valida que o
+// token existe, não expirou e não foi usado; então troca a senha (bcrypt) e
+// marca o token como usado (uso único).
+app.post("/api/redefinir-senha", async (req, res) => {
+  const { token, senha } = req.body;
+
+  if (typeof token !== "string" || token.length === 0) {
+    return res
+      .status(400)
+      .json({ erro: "Link inválido ou expirado, solicite um novo" });
+  }
+  if (typeof senha !== "string" || senha.length < 6 || senha.length > 72) {
+    return res
+      .status(400)
+      .json({ erro: "Senha deve ter entre 6 e 72 caracteres" });
+  }
+
+  try {
+    const resultado = await db.execute({
+      sql: "SELECT * FROM tokens_recuperacao WHERE token = ?",
+      args: [token],
+    });
+    const registro = resultado.rows[0];
+
+    // Token inexistente, já usado ou expirado: mesma mensagem clara para todos.
+    const expirado =
+      registro && new Date(registro.expira_em).getTime() <= Date.now();
+    if (!registro || Number(registro.usado) === 1 || expirado) {
+      return res
+        .status(400)
+        .json({ erro: "Link inválido ou expirado, solicite um novo" });
+    }
+
+    const senhaHash = await bcrypt.hash(senha, 10);
+
+    await db.execute({
+      sql: "UPDATE usuarios SET senha = ? WHERE id = ?",
+      args: [senhaHash, registro.usuario_id],
+    });
+    // Marca como usado para garantir uso único.
+    await db.execute({
+      sql: "UPDATE tokens_recuperacao SET usado = 1 WHERE id = ?",
+      args: [registro.id],
+    });
+
+    res.json({ mensagem: "Senha redefinida com sucesso" });
+  } catch (error) {
+    res.status(500).json({ erro: "Erro ao redefinir senha" });
   }
 });
 

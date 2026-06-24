@@ -78,6 +78,27 @@ async function criarTabelas() {
       error.message,
     );
   }
+
+  // Tokens de recuperação de senha. Cada solicitação de "esqueci minha senha"
+  // gera um token aleatório (crypto), com validade curta (30 min) e uso único.
+  // expira_em é guardado como timestamp ISO (UTC) para comparação direta.
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS tokens_recuperacao (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      usuario_id INTEGER NOT NULL,
+      token TEXT NOT NULL UNIQUE,
+      expira_em TEXT NOT NULL,
+      usado INTEGER NOT NULL DEFAULT 0,
+      criado_em TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    )
+  `);
+
+  // Índice no token para busca rápida na hora de validar o link de redefinição.
+  await db.execute(`
+    CREATE INDEX IF NOT EXISTS idx_tokens_recuperacao_token
+    ON tokens_recuperacao (token)
+  `);
 }
 
 criarTabelas();
