@@ -40,7 +40,7 @@ export default function Resultados() {
     return (
       <>
         <Header />
-        <main className="mx-auto max-w-5xl px-4 py-16 text-center text-gray-400 sm:px-8">
+        <main className="mx-auto max-w-5xl px-4 py-16 text-center text-muted sm:px-8">
           Carregando resultados...
         </main>
       </>
@@ -55,14 +55,14 @@ export default function Resultados() {
       <Header />
       <main className="mx-auto max-w-5xl px-4 py-8 text-white sm:px-8 sm:py-10">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            <span aria-hidden>📋</span> Resultados
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+            <span aria-hidden>📜</span> Resultados
           </h1>
-          <p className="mt-1 text-gray-400">
-            A magia pegou ou deu zebra? 🐴 ·{" "}
+          <p className="mt-1 text-muted">
+            A premonição pegou ou deu zebra? 🐴 ·{" "}
             <Link
               href="/"
-              className="text-green-400 transition-colors hover:text-green-300"
+              className="text-violet-light transition-colors hover:text-gold"
             >
               voltar aos palpites
             </Link>
@@ -70,7 +70,7 @@ export default function Resultados() {
         </header>
 
         {jogosEncerrados.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-gray-400">
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-muted">
             Ainda não rolou nenhum jogo. Segura a ansiedade, Vidente! 🔮
           </div>
         ) : (
@@ -78,10 +78,10 @@ export default function Resultados() {
             {jogosEncerrados.map((jogo) => (
               <div
                 key={jogo.id}
-                className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-green-500/40 sm:p-5"
+                className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-violet/40 sm:p-5"
               >
                 {jogo.grupo && (
-                  <span className="mb-3 inline-block rounded-full bg-yellow-400/10 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-yellow-300">
+                  <span className="mb-3 inline-block rounded-full bg-gold/10 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-gold">
                     {jogo.grupo}
                   </span>
                 )}
@@ -104,7 +104,7 @@ export default function Resultados() {
 
                   <div className="flex shrink-0 flex-col items-center px-2">
                     <span className="rounded-md bg-white/5 px-3 py-1 text-lg font-bold tabular-nums">
-                      {jogo.placarCasa} <span className="text-gray-500">x</span>{" "}
+                      {jogo.placarCasa} <span className="text-faint">x</span>{" "}
                       {jogo.placarFora}
                     </span>
                   </div>

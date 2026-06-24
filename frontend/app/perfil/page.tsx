@@ -6,12 +6,22 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Header from "../components/Header";
-import { traduzirTime } from "@/lib/times";
+import MadamePlacar from "../components/MadamePlacar";
+import {
+  calcularCristais,
+  calcularNivel,
+  calcularPremonicao,
+  formatarCristais,
+} from "@/lib/gamificacao";
 
 interface Perfil {
   nome: string;
   totalPalpites: number;
   totalPontos: number;
+  // Campos novos do backend para a "premonição" (taxa de acerto). Opcionais
+  // por segurança, caso a resposta venha de uma versão antiga da API.
+  palpitesAvaliados?: number;
+  palpitesCorretos?: number;
 }
 
 interface PalpiteDetalhe {
@@ -68,7 +78,7 @@ export default function PerfilPage() {
     return (
       <>
         <Header />
-        <main className="mx-auto max-w-3xl px-4 py-16 text-center text-gray-400 sm:px-8">
+        <main className="mx-auto max-w-3xl px-4 py-16 text-center text-muted sm:px-8">
           Carregando perfil...
         </main>
       </>
@@ -84,15 +94,15 @@ export default function PerfilPage() {
             <p className="text-3xl" aria-hidden>
               🔮
             </p>
-            <h1 className="mt-3 text-xl font-bold text-white">
+            <h1 className="mt-3 font-display text-xl font-bold text-white">
               Você precisa fazer login para continuar
             </h1>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-muted">
               Entra na conta pra ver teus palpites cravados.
             </p>
             <Link
               href="/login"
-              className="mt-6 inline-block rounded-lg bg-green-600 px-5 py-2.5 font-semibold text-white transition-colors hover:bg-green-500"
+              className="mt-6 inline-block rounded-lg bg-violet px-5 py-2.5 font-semibold text-white transition-colors hover:bg-violet-strong"
             >
               Fazer login
             </Link>
@@ -113,36 +123,76 @@ export default function PerfilPage() {
     );
   }
 
+  // Derivações puramente visuais sobre os números reais do perfil.
+  const cristais = calcularCristais(perfil.totalPontos);
+  const nivel = calcularNivel(cristais);
+  const premonicao = calcularPremonicao(
+    perfil.palpitesCorretos ?? 0,
+    perfil.palpitesAvaliados ?? 0,
+  );
+
   return (
     <>
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-8 text-white sm:px-8 sm:py-10">
-        <header className="mb-8 flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-yellow-400 text-xl font-bold uppercase text-black">
+        <header className="mb-6 flex items-center gap-4">
+          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-light to-violet-strong text-xl font-bold uppercase text-white shadow-lg shadow-violet-strong/40">
             {perfil.nome.charAt(0)}
+            <span className="estrela absolute -bottom-1 left-1/2 -translate-x-1/2 text-xs text-gold">
+              ✦
+            </span>
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
               {perfil.nome}
             </h1>
-            <p className="text-sm text-gray-400">Vidente de palpite 🔮</p>
+            <p className="text-sm text-violet-soft">
+              {nivel.titulo} · Nível {nivel.numero}
+            </p>
           </div>
         </header>
 
-        <div className="grid grid-cols-2 gap-4 sm:max-w-md">
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6 text-center">
-            <p className="text-4xl font-bold tabular-nums text-green-300">
+        {/* Stats gamificadas (camada visual sobre os pontos reais do banco). */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl border border-gold/25 bg-gold/[0.06] p-5 text-center">
+            <p className="font-display text-3xl font-bold tabular-nums text-gold">
+              <span aria-hidden className="mr-0.5 text-xl">
+                ✦
+              </span>
+              {formatarCristais(cristais)}
+            </p>
+            <p className="mt-1 text-xs text-muted">Cristais</p>
+          </div>
+          <div className="rounded-xl border border-grass/25 bg-grass/[0.06] p-5 text-center">
+            <p className="font-display text-3xl font-bold tabular-nums text-grass">
+              {premonicao === null ? "—" : `${premonicao}%`}
+            </p>
+            <p className="mt-1 text-xs text-muted">Premonição</p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center">
+            <p className="font-display text-3xl font-bold tabular-nums text-violet-light">
               {perfil.totalPalpites}
             </p>
-            <p className="mt-1 text-sm text-gray-400">Palpites cravados</p>
+            <p className="mt-1 text-xs text-muted">Palpites cravados</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6 text-center">
-            <p className="text-4xl font-bold tabular-nums text-yellow-300">
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center">
+            <p className="font-display text-3xl font-bold tabular-nums text-violet-light">
               {perfil.totalPontos}
             </p>
-            <p className="mt-1 text-sm text-gray-400">Pontos do Vidente</p>
+            <p className="mt-1 text-xs text-muted">Pontos do Vidente</p>
           </div>
         </div>
+
+        {/* Explicação curta da premonição (taxa de acerto real). */}
+        <p className="mt-3 text-xs text-faint">
+          Premonição = acertos sobre palpites já julgados
+          {perfil.palpitesAvaliados
+            ? ` (${perfil.palpitesCorretos ?? 0} de ${perfil.palpitesAvaliados})`
+            : " — ainda sem jogos encerrados"}
+          .
+        </p>
+
+        <MadamePlacar variante="compacto" className="mt-6" />
 
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-bold tracking-tight">
@@ -150,26 +200,26 @@ export default function PerfilPage() {
           </h2>
 
           {detalhes.length === 0 ? (
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-gray-400">
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-muted">
               Ainda não cravou nenhum palpite. Bora pros{" "}
               <Link
                 href="/"
-                className="text-green-400 transition-colors hover:text-green-300"
+                className="text-violet-light transition-colors hover:text-gold"
               >
                 jogos
               </Link>
-              ! 🍀
+              ! 🔮
             </div>
           ) : (
             <div className="space-y-3">
               {detalhes.map((palpite) => (
                 <div
                   key={palpite.id}
-                  className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-green-500/40 sm:p-5"
+                  className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-violet/40 sm:p-5"
                 >
                   <div className="mb-3 flex items-center justify-between gap-2">
                     {palpite.grupo && (
-                      <span className="inline-block rounded-full bg-yellow-400/10 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-yellow-300">
+                      <span className="inline-block rounded-full bg-gold/10 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-gold">
                         {palpite.grupo}
                       </span>
                     )}
@@ -177,10 +227,10 @@ export default function PerfilPage() {
                       <span
                         className={`ml-auto rounded-full px-2.5 py-0.5 text-[11px] font-semibold tabular-nums ${
                           palpite.pontos > 0
-                            ? "bg-green-500/15 text-green-300"
+                            ? "bg-grass/15 text-grass"
                             : palpite.pontos < 0
                               ? "bg-red-500/15 text-red-300"
-                              : "bg-white/5 text-gray-400"
+                              : "bg-white/5 text-muted"
                         }`}
                       >
                         {palpite.pontos > 0 ? "+" : ""}
@@ -192,12 +242,12 @@ export default function PerfilPage() {
                   <div className="flex items-center justify-between gap-2 sm:gap-3">
                     <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
                       <span className="min-w-0 text-sm font-medium break-words sm:text-base">
-                        {palpite.casa ? traduzirTime(palpite.casa) : "A definir"}
+                        {palpite.casa ?? "A definir"}
                       </span>
                       {palpite.casaEscudo && (
                         <Image
                           src={palpite.casaEscudo}
-                          alt={traduzirTime(palpite.casa)}
+                          alt={palpite.casa ?? ""}
                           width={28}
                           height={28}
                           className="shrink-0"
@@ -208,15 +258,15 @@ export default function PerfilPage() {
                     <div className="flex shrink-0 flex-col items-center gap-1 px-2">
                       <span className="rounded-md bg-white/5 px-3 py-1 text-lg font-bold tabular-nums">
                         {palpite.placarCasa}{" "}
-                        <span className="text-gray-500">x</span>{" "}
+                        <span className="text-faint">x</span>{" "}
                         {palpite.placarFora}
                       </span>
-                      <span className="text-[10px] uppercase tracking-wide text-gray-500">
+                      <span className="text-[10px] uppercase tracking-wide text-faint">
                         teu chute
                       </span>
                       {palpite.placarRealCasa !== null &&
                         palpite.placarRealFora !== null && (
-                          <span className="text-[11px] tabular-nums text-gray-400">
+                          <span className="text-[11px] tabular-nums text-muted">
                             real: {palpite.placarRealCasa} x{" "}
                             {palpite.placarRealFora}
                           </span>
@@ -227,14 +277,14 @@ export default function PerfilPage() {
                       {palpite.foraEscudo && (
                         <Image
                           src={palpite.foraEscudo}
-                          alt={traduzirTime(palpite.fora)}
+                          alt={palpite.fora ?? ""}
                           width={28}
                           height={28}
                           className="shrink-0"
                         />
                       )}
                       <span className="min-w-0 text-sm font-medium break-words sm:text-base">
-                        {palpite.fora ? traduzirTime(palpite.fora) : "A definir"}
+                        {palpite.fora ?? "A definir"}
                       </span>
                     </div>
                   </div>

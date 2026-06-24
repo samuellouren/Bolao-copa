@@ -35,16 +35,16 @@ export default function Registro() {
     <main className="flex min-h-screen items-center justify-center px-4 py-12 text-white">
       <form
         onSubmit={handleRegistro}
-        className="w-full max-w-sm space-y-5 rounded-2xl border border-white/10 bg-white/[0.03] p-8 shadow-2xl shadow-green-900/20"
+        className="w-full max-w-sm space-y-5 rounded-2xl border border-violet/20 bg-white/[0.03] p-8 shadow-2xl shadow-violet-strong/20"
       >
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">
-            <span aria-hidden>⚽</span>{" "}
-            <span className="bg-gradient-to-r from-green-400 via-yellow-300 to-green-400 bg-clip-text text-transparent">
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            <span aria-hidden>🔮</span>{" "}
+            <span className="bg-gradient-to-r from-violet-light via-gold to-violet-light bg-clip-text text-transparent">
               Chute do Vidente
             </span>
           </h1>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="mt-1 text-sm text-muted">
             Faz tua conta e firma o santo 🔮
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function Registro() {
           value={nome}
           maxLength={100}
           onChange={(e) => setNome(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-gray-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
+          className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-faint focus:border-violet focus:ring-2 focus:ring-violet/40"
           required
         />
 
@@ -65,7 +65,7 @@ export default function Registro() {
           value={email}
           maxLength={150}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-gray-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
+          className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-faint focus:border-violet focus:ring-2 focus:ring-violet/40"
           required
         />
 
@@ -75,7 +75,7 @@ export default function Registro() {
           value={senha}
           maxLength={72}
           onChange={(e) => setSenha(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-gray-500 focus:border-green-500 focus:ring-2 focus:ring-green-500/40"
+          className="w-full rounded-lg border border-white/10 bg-white/5 p-2.5 outline-none transition placeholder:text-faint focus:border-violet focus:ring-2 focus:ring-violet/40"
           required
         />
 
@@ -92,16 +92,16 @@ export default function Registro() {
 
         <button
           type="submit"
-          className="w-full rounded-lg bg-green-600 p-2.5 font-semibold text-white transition-colors hover:bg-green-500"
+          className="w-full rounded-lg bg-violet p-2.5 font-semibold text-white transition-colors hover:bg-violet-strong"
         >
           Tô dentro
         </button>
 
-        <p className="text-center text-sm text-gray-400">
+        <p className="text-center text-sm text-muted">
           Já é vidente?{" "}
           <a
             href="/login"
-            className="font-medium text-green-400 transition-colors hover:text-green-300"
+            className="font-medium text-violet-light transition-colors hover:text-gold"
           >
             Entrar
           </a>

@@ -828,8 +828,19 @@ app.get("/api/perfil", verificarToken, async (req, res) => {
   const usuarioId = req.usuario.id;
 
   try {
+    // Além dos totais já existentes, contamos:
+    // - palpitesAvaliados: palpites de jogos já encerrados (pontos não-nulos),
+    //   ou seja, os que já "valeram" e contam para a taxa de acerto.
+    // - palpitesCorretos: dentre os avaliados, os que pontuaram positivo
+    //   (acertou placar ou ao menos o resultado).
+    // A "premonição" (taxa de acerto) é derivada disso no frontend, sem
+    // duplicar nem alterar a lógica de pontuação existente.
     const resultado = await db.execute({
-      sql: `SELECT COUNT(*) as totalPalpites, SUM(pontos) as totalPontos
+      sql: `SELECT
+              COUNT(*) AS totalPalpites,
+              SUM(pontos) AS totalPontos,
+              SUM(CASE WHEN pontos IS NOT NULL THEN 1 ELSE 0 END) AS palpitesAvaliados,
+              SUM(CASE WHEN pontos > 0 THEN 1 ELSE 0 END) AS palpitesCorretos
             FROM palpites WHERE usuarioId = ?`,
       args: [usuarioId],
     });
@@ -839,6 +850,8 @@ app.get("/api/perfil", verificarToken, async (req, res) => {
       nome: req.usuario.email,
       totalPalpites: dados.totalPalpites,
       totalPontos: dados.totalPontos ?? 0,
+      palpitesAvaliados: dados.palpitesAvaliados ?? 0,
+      palpitesCorretos: dados.palpitesCorretos ?? 0,
     });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar perfil" });

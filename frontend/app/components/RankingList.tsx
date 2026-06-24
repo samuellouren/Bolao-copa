@@ -11,8 +11,8 @@ const medalhas = ["🥇", "🥈", "🥉"];
 export default function RankingList({ ranking }: { ranking: Jogador[] }) {
   if (ranking.length === 0) {
     return (
-      <p className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-gray-400">
-        Ninguém pontuou ainda. 🍀
+      <p className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-muted">
+        Ninguém pontuou ainda. 🔮
       </p>
     );
   }
@@ -26,19 +26,19 @@ export default function RankingList({ ranking }: { ranking: Jogador[] }) {
             key={jogador.id}
             className={`flex items-center justify-between rounded-xl border p-4 transition-colors ${
               podio
-                ? "border-yellow-400/30 bg-yellow-400/[0.07]"
-                : "border-white/10 bg-white/[0.03] hover:border-green-500/30"
+                ? "border-gold/30 bg-gold/[0.07]"
+                : "border-white/10 bg-white/[0.03] hover:border-violet/30"
             }`}
           >
             <div className="flex items-center gap-4">
-              <span className="w-7 text-center text-lg font-semibold tabular-nums text-gray-400">
+              <span className="w-7 text-center text-lg font-semibold tabular-nums text-muted">
                 {podio ? medalhas[index] : index + 1}
               </span>
               <span className="font-medium">{jogador.nome}</span>
             </div>
-            <span className="font-bold tabular-nums text-yellow-300">
+            <span className="font-display font-bold tabular-nums text-gold">
               {jogador.totalPontos ?? 0}{" "}
-              <span className="text-sm font-normal text-gray-500">pts</span>
+              <span className="text-sm font-normal text-faint">cristais</span>
             </span>
           </div>
         );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "./components/Header";
+import MadamePlacar from "./components/MadamePlacar";
 import Cookies from "js-cookie";
 import { traduzirTime } from "@/lib/times";
 
@@ -191,7 +192,7 @@ export default function Home() {
     return (
       <>
         <Header />
-        <main className="mx-auto max-w-5xl px-4 py-16 text-center text-gray-400 sm:px-8">
+        <main className="mx-auto max-w-5xl px-4 py-16 text-center text-muted sm:px-8">
           Carregando jogos...
         </main>
       </>
@@ -202,31 +203,34 @@ export default function Home() {
     <>
       <Header />
       <main className="mx-auto max-w-5xl px-4 py-8 text-white sm:px-8 sm:py-10">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            <span aria-hidden>⚽</span>{" "}
-            <span className="bg-gradient-to-r from-green-400 via-yellow-300 to-green-400 bg-clip-text text-transparent">
+        <header className="mb-6">
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+            <span aria-hidden>🔮</span>{" "}
+            <span className="bg-gradient-to-r from-violet-light via-gold to-violet-light bg-clip-text text-transparent">
               Chute do Vidente
             </span>
           </h1>
-          <p className="mt-1 text-gray-400">
+          <p className="mt-1 text-muted">
             Crava o placar e veja se vc vidente de respeito 🔮 depois me fale os
             numeros da mega-sena ·{" "}
             <Link
               href="/resultados"
-              className="text-green-400 transition-colors hover:text-green-300"
+              className="text-violet-light transition-colors hover:text-gold"
             >
               ver resultados
             </Link>
           </p>
         </header>
 
+        {/* A vidente de plantão dá as boas-vindas com uma frase mística. */}
+        <MadamePlacar className="mb-6" />
+
         {jogosAbertos.length === 0 && (
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-gray-400">
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center text-muted">
             Zerou os palpites, craque! Tá tudo cravado por enquanto. 🍀{" "}
             <Link
               href="/resultados"
-              className="text-green-400 transition-colors hover:text-green-300"
+              className="text-violet-light transition-colors hover:text-gold"
             >
               Bora ver no que deu
             </Link>
@@ -251,10 +255,10 @@ export default function Home() {
             return (
               <div
                 key={jogo.id}
-                className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-green-500/40 sm:p-5"
+                className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-violet/40 sm:p-5"
               >
                 {jogo.grupo && (
-                  <span className="mb-3 inline-block rounded-full bg-yellow-400/10 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-yellow-300">
+                  <span className="mb-3 inline-block rounded-full bg-gold/10 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-gold">
                     {jogo.grupo}
                   </span>
                 )}
@@ -282,32 +286,32 @@ export default function Home() {
                       <>
                         {salvo && (
                           <span className="rounded-md bg-white/5 px-3 py-1 text-lg font-bold tabular-nums">
-                            {salvo.casa} <span className="text-gray-500">x</span>{" "}
+                            {salvo.casa} <span className="text-faint">x</span>{" "}
                             {salvo.fora}
                           </span>
                         )}
-                        <p className="text-center text-[11px] text-gray-400">
+                        <p className="text-center text-[11px] text-muted">
                           Palpites encerrados para esse jogo
                         </p>
                       </>
                     ) : mostrarResumo ? (
                       // Já palpitou e não está editando: resumo + botão Editar.
                       <>
-                        <span className="rounded-md bg-green-500/10 px-3 py-1 text-lg font-bold tabular-nums text-green-300">
-                          {salvo.casa} <span className="text-gray-500">x</span>{" "}
+                        <span className="rounded-md bg-grass/10 px-3 py-1 text-lg font-bold tabular-nums text-grass">
+                          {salvo.casa} <span className="text-faint">x</span>{" "}
                           {salvo.fora}
                         </span>
-                        <span className="text-[10px] uppercase tracking-wide text-green-400/80">
+                        <span className="text-[10px] uppercase tracking-wide text-grass/80">
                           Você já palpitou
                         </span>
                         <button
                           onClick={() => editarPalpite(jogo.id)}
-                          className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-gray-200 transition-colors hover:border-green-500/40 hover:text-white"
+                          className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-lav transition-colors hover:border-violet/40 hover:text-white"
                         >
                           Editar palpite ✏️
                         </button>
                         {mensagens[jogo.id] && (
-                          <p className="text-center text-[11px] text-gray-400">
+                          <p className="text-center text-[11px] text-muted">
                             {mensagens[jogo.id]}
                           </p>
                         )}
@@ -332,10 +336,10 @@ export default function Home() {
                             className={`w-11 rounded-md border bg-white/5 p-1.5 text-center tabular-nums outline-none transition focus:ring-2 ${
                               erroCasa
                                 ? "border-red-500 focus:border-red-500 focus:ring-red-500/40"
-                                : "border-white/10 focus:border-green-500 focus:ring-green-500/40"
+                                : "border-white/10 focus:border-violet focus:ring-violet/40"
                             }`}
                           />
-                          <span className="text-gray-500">x</span>
+                          <span className="text-faint">x</span>
                           <input
                             type="text"
                             inputMode="numeric"
@@ -352,7 +356,7 @@ export default function Home() {
                             className={`w-11 rounded-md border bg-white/5 p-1.5 text-center tabular-nums outline-none transition focus:ring-2 ${
                               erroFora
                                 ? "border-red-500 focus:border-red-500 focus:ring-red-500/40"
-                                : "border-white/10 focus:border-green-500 focus:ring-green-500/40"
+                                : "border-white/10 focus:border-violet focus:ring-violet/40"
                             }`}
                           />
                         </div>
@@ -369,17 +373,17 @@ export default function Home() {
                               ? "Preencha os dois placares para cravar"
                               : undefined
                           }
-                          className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-green-900/40 transition-colors hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-green-600"
+                          className="rounded-md bg-grass px-3 py-1.5 text-xs font-semibold text-base shadow-sm shadow-grass/20 transition-colors hover:bg-grass/90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-grass"
                         >
                           {salvo ? "Salvar palpite 🔮" : "Cravar 🔮"}
                         </button>
                         {incompleto && !temErro && (
-                          <p className="text-center text-[11px] text-yellow-300/80">
+                          <p className="text-center text-[11px] text-gold/80">
                             Preencha os dois placares para cravar
                           </p>
                         )}
                         {mensagens[jogo.id] && (
-                          <p className="text-center text-[11px] text-gray-400">
+                          <p className="text-center text-[11px] text-muted">
                             {mensagens[jogo.id]}
                           </p>
                         )}

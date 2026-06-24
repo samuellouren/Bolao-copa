@@ -1,36 +1,106 @@
 @import "tailwindcss";
 
+/* -------------------------------------------------------------------------
+   Tema místico "Chute do Vidente" (Madame Placar)
+   Direção visual importada do Claude Design:
+   - Fundo azul-marinho profundo (#0b0e24) com brilhos violeta/dourado.
+   - Violeta/roxo como cor de DESTAQUE principal.
+   - Dourado nos detalhes de prestígio (cristais, pódio, selos).
+   - Verde como cor SECUNDÁRIA/funcional (cravar, sucesso, +/-).
+   Os tokens abaixo viram utilitários do Tailwind v4 (bg-base, text-gold, ...).
+   ------------------------------------------------------------------------- */
 @theme inline {
-  --color-background: #0a0d0a;
-  --color-foreground: #ededed;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Superfícies */
+  --color-base: #0b0e24; /* fundo da página */
+  --color-surface: #15183a; /* cartões */
+  --color-surface-2: #1b1f48; /* cartões em destaque/hover */
+  --color-elevated: #221a4a; /* modais, cartões violeta */
+
+  /* Destaque principal — violeta/roxo místico */
+  --color-violet: #8a6bd4;
+  --color-violet-strong: #7a52c8;
+  --color-violet-light: #c79bf0;
+  --color-violet-soft: #b39ae0;
+
+  /* Prestígio — dourado */
+  --color-gold: #f2c14e;
+  --color-gold-deep: #caa24a;
+  --color-gold-soft: #fff0c2;
+
+  /* Funcional / sucesso — verde */
+  --color-grass: #4be3a0;
+
+  /* Acento secundário — magenta (zebra, alertas lúdicos) */
+  --color-magenta: #ff5da2;
+  --color-magenta-soft: #ffb9d6;
+
+  /* Texto */
+  --color-foreground: #e7e9ff;
+  --color-lav: #cfd2ff; /* texto secundário lavanda */
+  --color-muted: #8b8fc0; /* texto apagado */
+  --color-faint: #54588a; /* texto bem apagado */
+
+  /* Tipografia */
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif), ui-serif, Georgia, serif;
 }
 
-/* App é dark-only. Fundo quase preto com brilhos verde e amarelo no topo
-   (verde-amarelo, vibe seleção brasileira). */
+/* Fundo azul-marinho com auras violeta e dourada no topo (vibe oráculo). */
 body {
   min-height: 100vh;
-  background-color: #0a0d0a;
+  background-color: #0b0e24;
   background-image:
     radial-gradient(
-      ellipse 60% 50% at 15% -10%,
-      rgba(34, 197, 94, 0.18),
+      ellipse 55% 45% at 12% -8%,
+      rgba(138, 107, 212, 0.22),
       transparent 70%
     ),
     radial-gradient(
-      ellipse 60% 50% at 85% -5%,
-      rgba(250, 204, 21, 0.12),
+      ellipse 55% 45% at 88% -6%,
+      rgba(242, 193, 78, 0.12),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 50% 110%,
+      rgba(122, 82, 200, 0.14),
       transparent 70%
     );
   background-attachment: fixed;
-  color: #ededed;
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  color: #e7e9ff;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
 /* Seleção de texto na cor de destaque */
 ::selection {
-  background: rgba(34, 197, 94, 0.35);
+  background: rgba(138, 107, 212, 0.4);
+}
+
+/* Títulos e números de destaque usam a fonte display. */
+.font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Frases da Madame Placar: serifada itálica, ar de oráculo. */
+.font-oracle {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  font-style: italic;
+}
+
+/* Cintilar suave das estrelinhas ✦ espalhadas pelo tema. */
+@keyframes cintilar {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1);
+  }
+}
+.estrela {
+  animation: cintilar 3.2s ease-in-out infinite;
 }
 
 /* Rolagem horizontal sem barra visível (usado no menu em telas pequenas) */
