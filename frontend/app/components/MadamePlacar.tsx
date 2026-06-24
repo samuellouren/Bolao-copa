@@ -85,7 +85,7 @@ export default function MadamePlacar({
         className={`flex items-start gap-3 rounded-2xl border border-violet/20 bg-violet/[0.07] px-4 py-3 ${className}`}
       >
         <Orbe tamanho={34} />
-        <p className="font-oracle text-sm leading-snug text-violet-light sm:text-[15px]">
+        <p className="font-oracle text-sm leading-snug text-foreground sm:text-[15px]">
           “{texto}”
         </p>
       </div>
@@ -114,7 +114,7 @@ export default function MadamePlacar({
       </div>
       <p
         key={texto}
-        className="relative mt-4 font-oracle text-[15px] leading-relaxed text-lav transition-opacity duration-500 sm:text-base"
+        className="relative mt-4 font-oracle text-[15px] leading-relaxed text-foreground transition-opacity duration-500 sm:text-base"
       >
         “{texto}”
       </p>

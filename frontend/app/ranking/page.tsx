@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
 import RankingList from "../components/RankingList";
-import MadamePlacar from "../components/MadamePlacar";
+import Sidebar from "../components/Sidebar";
 
 interface Jogador {
   id: number;
@@ -40,21 +40,21 @@ export default function Ranking() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-8 text-white sm:px-8 sm:py-10">
-        <header className="mb-6">
-          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            <span aria-hidden>🏆</span> Ranking dos Videntes
-          </h1>
-          <p className="mt-1 text-muted">Quem acumulou mais cristais 🔮</p>
-        </header>
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 text-white sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        {/* COLUNA PRINCIPAL — conteúdo */}
+        <section className="min-w-0">
+          <header className="mb-6">
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              <span aria-hidden>🏆</span> Ranking dos Videntes
+            </h1>
+            <p className="mt-1 text-muted">Quem acumulou mais cristais 🔮</p>
+          </header>
 
-        <MadamePlacar
-          variante="compacto"
-          frase="Quem está no topo que durma com um olho aberto. A roda gira, meu bem."
-          className="mb-6"
-        />
+          <RankingList ranking={ranking} />
+        </section>
 
-        <RankingList ranking={ranking} />
+        {/* SIDEBAR — Madame Placar + Seus Poderes (sticky no desktop) */}
+        <Sidebar />
       </main>
     </>
   );

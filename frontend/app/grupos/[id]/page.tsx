@@ -8,6 +8,7 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import Header from "../../components/Header";
 import RankingList from "../../components/RankingList";
+import Sidebar from "../../components/Sidebar";
 
 interface TokenPayload {
   id: number;
@@ -218,7 +219,9 @@ export default function GrupoDetalhePage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-8 text-white sm:px-8 sm:py-10">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 text-white sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        {/* COLUNA PRINCIPAL — conteúdo */}
+        <section className="min-w-0">
         <Link
           href="/grupos"
           className="text-sm text-muted transition-colors hover:text-white"
@@ -329,6 +332,10 @@ export default function GrupoDetalhePage() {
             Sair do grupo
           </button>
         </section>
+        </section>
+
+        {/* SIDEBAR — Madame Placar + Seus Poderes (sticky no desktop) */}
+        <Sidebar />
       </main>
 
       {/* Modal de confirmação */}

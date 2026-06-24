@@ -5,6 +5,7 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
 
 interface Grupo {
   id: number;
@@ -156,7 +157,9 @@ export default function GruposPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-8 text-white sm:px-8 sm:py-10">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 text-white sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        {/* COLUNA PRINCIPAL — conteúdo */}
+        <section className="min-w-0">
         <header className="mb-8">
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
             <span aria-hidden>👥</span> Grupos
@@ -286,6 +289,10 @@ export default function GruposPage() {
             </div>
           )}
         </section>
+        </section>
+
+        {/* SIDEBAR — Madame Placar + Seus Poderes (sticky no desktop) */}
+        <Sidebar />
       </main>
     </>
   );

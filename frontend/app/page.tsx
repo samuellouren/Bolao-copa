@@ -262,12 +262,23 @@ export default function Home() {
   const cravadosNaRodada = jogosAbertos.filter(
     (jogo) => palpitesSalvos[jogo.id],
   ).length;
-  const proximoFechamento = jogosAbertos
-    .map((jogo) => new Date(jogo.data).getTime() - ANTECEDENCIA_MINIMA_MS)
-    .filter((t) => Number.isFinite(t) && t > Date.now())
-    .sort((a, b) => a - b)[0];
-  const contagem = proximoFechamento
-    ? formatarContagem(proximoFechamento - Date.now())
+  // Próximo jogo cujo portal ainda não fechou (faltam > 5 min pro início).
+  // Conforme o tempo passa, o jogo do topo fecha e este cálculo escorrega
+  // automaticamente para o próximo da fila, junto com o nome dos times.
+  const proximoJogo = jogosAbertos
+    .filter((jogo) => {
+      const fecha = new Date(jogo.data).getTime() - ANTECEDENCIA_MINIMA_MS;
+      return Number.isFinite(fecha) && fecha > Date.now();
+    })
+    .sort(
+      (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime(),
+    )[0];
+  const contagem = proximoJogo
+    ? formatarContagem(
+        new Date(proximoJogo.data).getTime() -
+          ANTECEDENCIA_MINIMA_MS -
+          Date.now(),
+      )
     : null;
 
   if (carregando) {
@@ -311,11 +322,13 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Contador "portais fecham em HH:MM:SS" (próximo jogo a fechar). */}
-            {contagem && (
+            {/* Contador do próximo portal a fechar, nomeando o jogo específico.
+                Ao fechar, escorrega sozinho para o próximo jogo da fila. */}
+            {contagem && proximoJogo && (
               <div className="flex items-center gap-2.5 rounded-xl border border-magenta/30 bg-magenta/[0.08] px-4 py-2.5">
                 <span className="text-[11px] uppercase tracking-wide text-magenta-soft">
-                  portais fecham em
+                  Portal de {traduzirTime(proximoJogo.casa)} ×{" "}
+                  {traduzirTime(proximoJogo.fora)} fecha em
                 </span>
                 <span className="font-display text-lg font-bold tabular-nums tracking-wide text-magenta">
                   {contagem}

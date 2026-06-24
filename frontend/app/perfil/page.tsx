@@ -6,7 +6,7 @@ import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Header from "../components/Header";
-import MadamePlacar from "../components/MadamePlacar";
+import Sidebar from "../components/Sidebar";
 import {
   calcularCristais,
   calcularNivel,
@@ -134,7 +134,9 @@ export default function PerfilPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-8 text-white sm:px-8 sm:py-10">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-8 text-white sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        {/* COLUNA PRINCIPAL — conteúdo */}
+        <section className="min-w-0">
         <header className="mb-6 flex items-center gap-4">
           <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-light to-violet-strong text-xl font-bold uppercase text-white shadow-lg shadow-violet-strong/40">
             {perfil.nome.charAt(0)}
@@ -191,8 +193,6 @@ export default function PerfilPage() {
             : " — ainda sem jogos encerrados"}
           .
         </p>
-
-        <MadamePlacar variante="compacto" className="mt-6" />
 
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-bold tracking-tight">
@@ -293,6 +293,10 @@ export default function PerfilPage() {
             </div>
           )}
         </section>
+        </section>
+
+        {/* SIDEBAR — Madame Placar + Seus Poderes (sticky no desktop) */}
+        <Sidebar />
       </main>
     </>
   );

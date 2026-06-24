@@ -8,8 +8,10 @@ import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
 import {
   calcularCristais,
+  calcularNivel,
   formatarCristais,
   calcularPremonicao,
+  type Nivel,
 } from "@/lib/gamificacao";
 
 interface TokenPayload {
@@ -19,8 +21,18 @@ interface TokenPayload {
 
 // Estatísticas gamificadas exibidas no header (derivadas do /api/perfil).
 interface StatsHeader {
+  nome: string;
   cristais: number;
   premonicao: number | null;
+  nivel: Nivel;
+}
+
+// Iniciais para o avatar do header (até 2 letras, a partir do nome do perfil).
+function iniciais(nome: string): string {
+  const partes = nome.trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return "?";
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
 }
 
 const navItems = [
@@ -61,12 +73,15 @@ export default function Header() {
       })
       .then((res) => {
         const d = res.data;
+        const cristais = calcularCristais(d.totalPontos ?? 0);
         setStats({
-          cristais: calcularCristais(d.totalPontos ?? 0),
+          nome: d.nome ?? "",
+          cristais,
           premonicao: calcularPremonicao(
             d.palpitesCorretos ?? 0,
             d.palpitesAvaliados ?? 0,
           ),
+          nivel: calcularNivel(cristais),
         });
       })
       .catch(() => setStats(null));
@@ -77,6 +92,11 @@ export default function Header() {
     setStats(null);
     router.push("/login");
   }
+
+  // Na página /perfil os mesmos números (cristais, premonição, nível) já
+  // aparecem em destaque no corpo, então escondemos os chips do header ali
+  // para não duplicar a informação. Nas demais páginas o header os mostra.
+  const ocultarStats = pathname === "/perfil";
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-base/80 backdrop-blur-md">
@@ -112,8 +132,10 @@ export default function Header() {
 
         {usuario ? (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Cristais e premonição (gamificação visual sobre os pontos reais) */}
-            {stats && (
+            {/* Chips de stats (gamificação visual sobre os pontos reais):
+                cristais ✦ · premonição % · nível + avatar com iniciais.
+                Ocultos em /perfil, onde os mesmos números já aparecem no corpo. */}
+            {stats && !ocultarStats && (
               <div className="hidden items-center gap-2 sm:flex">
                 <span
                   className="flex items-center gap-1 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-gold"
@@ -121,12 +143,39 @@ export default function Header() {
                 >
                   <span aria-hidden>✦</span>
                   {formatarCristais(stats.cristais)}
+                  <span className="hidden font-normal text-gold/70 lg:inline">
+                    cristais
+                  </span>
                 </span>
                 <span
-                  className="flex items-center gap-1 rounded-full border border-grass/30 bg-grass/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-grass"
+                  className="flex items-center gap-1 rounded-full border border-grass/30 bg-grass/10 px-2.5 py-1 text-xs font-semibold text-grass"
                   title="Premonição: sua taxa de acerto"
                 >
-                  {stats.premonicao === null ? "—" : `${stats.premonicao}%`}
+                  <span className="hidden font-normal text-grass/70 lg:inline">
+                    premonição
+                  </span>
+                  <span className="tabular-nums">
+                    {stats.premonicao === null ? "—" : `${stats.premonicao}%`}
+                  </span>
+                </span>
+                <span
+                  className="flex items-center gap-2 rounded-full border border-violet/30 bg-violet/10 py-1 pl-1 pr-3"
+                  title={`Nível ${stats.nivel.numero} · ${stats.nivel.titulo}`}
+                >
+                  <span
+                    aria-hidden
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-light to-violet-strong text-[11px] font-bold uppercase text-white shadow-sm shadow-violet-strong/40"
+                  >
+                    {stats.nome ? iniciais(stats.nome) : "🔮"}
+                  </span>
+                  <span className="flex flex-col leading-tight">
+                    <span className="text-[11px] font-semibold text-white">
+                      Nível {stats.nivel.numero}
+                    </span>
+                    <span className="text-[10px] text-violet-soft">
+                      {stats.nivel.titulo}
+                    </span>
+                  </span>
                 </span>
               </div>
             )}
