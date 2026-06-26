@@ -502,7 +502,7 @@ export default function Home() {
                                 ? "Preencha os dois placares para cravar"
                                 : undefined
                             }
-                            className="rounded-md bg-grass px-3 py-1.5 text-xs font-semibold text-base shadow-sm shadow-grass/20 transition-colors hover:bg-grass/90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-grass"
+                            className="rounded-md bg-grass px-3 py-1.5 text-xs font-semibold text-night shadow-sm shadow-grass/20 transition-colors hover:bg-grass/90 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:bg-grass"
                           >
                             {salvo ? "Salvar 🔮" : "Cravar 🔮"}
                           </button>

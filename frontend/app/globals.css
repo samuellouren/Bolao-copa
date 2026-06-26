@@ -7,11 +7,14 @@
    - Violeta/roxo como cor de DESTAQUE principal.
    - Dourado nos detalhes de prestígio (cristais, pódio, selos).
    - Verde como cor SECUNDÁRIA/funcional (cravar, sucesso, +/-).
-   Os tokens abaixo viram utilitários do Tailwind v4 (bg-base, text-gold, ...).
+   Os tokens abaixo viram utilitários do Tailwind v4 (bg-night, text-gold, ...).
    ------------------------------------------------------------------------- */
 @theme inline {
   /* Superfícies */
-  --color-base: #0b0e24; /* fundo da página */
+  /* "night" (não "base"): o nome "base" colide com o utilitário de tamanho de
+     fonte text-base do Tailwind v4 — definir --color-base fazia text-base virar
+     uma cor (#0b0e24) em vez do tamanho, deixando texto invisível no fundo. */
+  --color-night: #0b0e24; /* fundo da página */
   --color-surface: #15183a; /* cartões */
   --color-surface-2: #1b1f48; /* cartões em destaque/hover */
   --color-elevated: #221a4a; /* modais, cartões violeta */

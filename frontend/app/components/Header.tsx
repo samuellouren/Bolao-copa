@@ -100,7 +100,7 @@ export default function Header() {
   const ocultarStats = pathname === "/perfil";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-base/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-night/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3 sm:px-8">
         <Link
           href="/"
