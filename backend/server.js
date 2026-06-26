@@ -552,6 +552,102 @@ app.get("/api/pontuacao/:jogoId", verificarToken, async (req, res) => {
   }
 });
 
+// Avalia e grava os pontos de TODOS os palpites de um jogo já encerrado.
+// Aplica a regra 10/5/-3 com redistribuição dos pontos perdidos (3 por erro)
+// entre quem ao menos acertou o resultado. É IDEMPOTENTE: recalcula sempre a
+// partir dos palpites atuais (que ficam congelados após o início do jogo), de
+// modo que pode rodar quantas vezes quiser sem dobrar pontuação — essencial
+// para o agendador, que reprocessa periodicamente. Devolve quantos palpites
+// foram atualizados e o detalhamento.
+async function avaliarPalpitesDoJogo(jogoId, placarCasaReal, placarForaReal) {
+  const resultadoReal = Math.sign(placarCasaReal - placarForaReal);
+
+  const resultadoPalpites = await db.execute({
+    sql: "SELECT * FROM palpites WHERE jogoId = ?",
+    args: [jogoId],
+  });
+  const palpites = resultadoPalpites.rows;
+
+  if (palpites.length === 0) {
+    return { atualizados: 0, resultados: [] };
+  }
+
+  const acertaram = [];
+  const erraram = [];
+
+  palpites.forEach((palpite) => {
+    const resultadoPalpite = Math.sign(palpite.placarCasa - palpite.placarFora);
+    const acertouPlacar =
+      palpite.placarCasa === placarCasaReal &&
+      palpite.placarFora === placarForaReal;
+    const acertouResultado = resultadoPalpite === resultadoReal;
+
+    let pontosBase = 0;
+    if (acertouPlacar) pontosBase = 10;
+    else if (acertouResultado) pontosBase = 5;
+
+    if (acertouResultado) {
+      acertaram.push({ ...palpite, pontosBase });
+    } else {
+      erraram.push({ ...palpite, pontosBase: -3 });
+    }
+  });
+
+  const totalPerdido = erraram.length * 3;
+  const bonusPorAcerto =
+    acertaram.length > 0 ? totalPerdido / acertaram.length : 0;
+
+  const atualizacoes = [];
+
+  acertaram.forEach((p) => {
+    atualizacoes.push({ id: p.id, pontos: p.pontosBase + bonusPorAcerto });
+  });
+
+  erraram.forEach((p) => {
+    atualizacoes.push({ id: p.id, pontos: p.pontosBase });
+  });
+
+  for (const u of atualizacoes) {
+    await db.execute({
+      sql: "UPDATE palpites SET pontos = ? WHERE id = ?",
+      args: [u.pontos, u.id],
+    });
+  }
+
+  return { atualizados: atualizacoes.length, resultados: atualizacoes };
+}
+
+// Varre todos os jogos da Copa (via cache) e avalia os que já têm placar real.
+// Idempotente (delega ao helper acima). Usado tanto pela rota admin de batch
+// quanto pelo agendador interno.
+async function processarFinalizados() {
+  const jogos = await buscarJogos();
+  const finalizados = jogos.filter(
+    (j) => j.placarCasa !== null && j.placarFora !== null,
+  );
+
+  let palpitesAtualizados = 0;
+  const processados = [];
+  for (const jogo of finalizados) {
+    const { atualizados } = await avaliarPalpitesDoJogo(
+      jogo.id,
+      jogo.placarCasa,
+      jogo.placarFora,
+    );
+    if (atualizados > 0) {
+      palpitesAtualizados += atualizados;
+      processados.push({ jogoId: jogo.id, atualizados });
+    }
+  }
+
+  return {
+    jogosFinalizados: finalizados.length,
+    jogosComPalpites: processados.length,
+    palpitesAtualizados,
+    processados,
+  };
+}
+
 app.post("/api/processar-jogo/:jogoId", verificarAdmin, async (req, res) => {
   const { jogoId } = req.params;
 
@@ -572,68 +668,34 @@ app.post("/api/processar-jogo/:jogoId", verificarAdmin, async (req, res) => {
       return res.json({ mensagem: "Jogo ainda não terminou" });
     }
 
-    const resultadoReal = Math.sign(placarCasaReal - placarForaReal);
+    const { atualizados, resultados } = await avaliarPalpitesDoJogo(
+      Number(jogoId),
+      placarCasaReal,
+      placarForaReal,
+    );
 
-    const resultadoPalpites = await db.execute({
-      sql: "SELECT * FROM palpites WHERE jogoId = ?",
-      args: [Number(jogoId)],
-    });
-    const palpites = resultadoPalpites.rows;
-
-    if (palpites.length === 0) {
+    if (atualizados === 0) {
       return res
         .status(404)
         .json({ erro: "Nenhum palpite encontrado para esse jogo" });
     }
 
-    const acertaram = [];
-    const erraram = [];
-
-    palpites.forEach((palpite) => {
-      const resultadoPalpite = Math.sign(
-        palpite.placarCasa - palpite.placarFora,
-      );
-      const acertouPlacar =
-        palpite.placarCasa === placarCasaReal &&
-        palpite.placarFora === placarForaReal;
-      const acertouResultado = resultadoPalpite === resultadoReal;
-
-      let pontosBase = 0;
-      if (acertouPlacar) pontosBase = 10;
-      else if (acertouResultado) pontosBase = 5;
-
-      if (acertouResultado) {
-        acertaram.push({ ...palpite, pontosBase });
-      } else {
-        erraram.push({ ...palpite, pontosBase: -3 });
-      }
-    });
-
-    const totalPerdido = erraram.length * 3;
-    const bonusPorAcerto =
-      acertaram.length > 0 ? totalPerdido / acertaram.length : 0;
-
-    const atualizacoes = [];
-
-    acertaram.forEach((p) => {
-      const pontosFinal = p.pontosBase + bonusPorAcerto;
-      atualizacoes.push({ id: p.id, pontos: pontosFinal });
-    });
-
-    erraram.forEach((p) => {
-      atualizacoes.push({ id: p.id, pontos: p.pontosBase });
-    });
-
-    for (const u of atualizacoes) {
-      await db.execute({
-        sql: "UPDATE palpites SET pontos = ? WHERE id = ?",
-        args: [u.pontos, u.id],
-      });
-    }
-
-    res.json({ mensagem: "Jogo processado!", resultados: atualizacoes });
+    res.json({ mensagem: "Jogo processado!", resultados });
   } catch (error) {
     res.status(500).json({ erro: "Erro ao processar jogo" });
+  }
+});
+
+// Processa de uma vez TODOS os jogos já finalizados (admin/cron). Idempotente:
+// pode ser chamado quantas vezes quiser. Pensado para reprocessar a cada
+// rodada sem precisar disparar jogo a jogo.
+app.post("/api/processar-finalizados", verificarAdmin, async (req, res) => {
+  try {
+    const resumo = await processarFinalizados();
+    res.json({ mensagem: "Jogos finalizados processados", ...resumo });
+  } catch (error) {
+    console.error("Erro ao processar finalizados:", error.message);
+    res.status(500).json({ erro: "Erro ao processar jogos finalizados" });
   }
 });
 
@@ -1090,7 +1152,51 @@ app.use((err, req, res, next) => {
   res.status(500).json({ erro: "Erro interno do servidor" });
 });
 
+// ---------------------------------------------------------------------------
+// AGENDADOR DE PROCESSAMENTO (CRON INTERNO)
+// Em vez de depender de alguém chamar a rota admin a cada rodada, o servidor
+// reavalia periodicamente os jogos já encerrados e grava os pontos. Assim o
+// ranking/cristais se atualiza sozinho durante a Copa. O processamento é
+// idempotente, então rodar de novo não dobra pontuação.
+//
+// Intervalo configurável por PROCESSAR_INTERVALO_MIN (padrão: 15 min). Defina
+// PROCESSAR_INTERVALO_MIN=0 para desligar o agendador (ex.: se preferir usar um
+// Cron Job dedicado do Render batendo em POST /api/processar-finalizados).
+// Observação: no plano free do Render o web service hiberna quando ocioso, e o
+// timer só corre com o serviço acordado — para garantia total use um Cron Job.
+// ---------------------------------------------------------------------------
+const PROCESSAR_INTERVALO_MIN =
+  process.env.PROCESSAR_INTERVALO_MIN !== undefined
+    ? Number(process.env.PROCESSAR_INTERVALO_MIN)
+    : 15;
+
+async function rodarProcessamentoAgendado() {
+  try {
+    const r = await processarFinalizados();
+    if (r.palpitesAtualizados > 0) {
+      console.log(
+        `[cron] ${r.jogosComPalpites} jogos com palpite avaliados, ` +
+          `${r.palpitesAtualizados} palpites atualizados`,
+      );
+    }
+  } catch (error) {
+    console.error("[cron] Falha ao processar finalizados:", error.message);
+  }
+}
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
+
+  if (Number.isFinite(PROCESSAR_INTERVALO_MIN) && PROCESSAR_INTERVALO_MIN > 0) {
+    // Uma primeira passada logo após subir, depois de tempos em tempos.
+    rodarProcessamentoAgendado();
+    setInterval(
+      rodarProcessamentoAgendado,
+      PROCESSAR_INTERVALO_MIN * 60 * 1000,
+    );
+    console.log(
+      `[cron] Processamento automático a cada ${PROCESSAR_INTERVALO_MIN} min`,
+    );
+  }
 });

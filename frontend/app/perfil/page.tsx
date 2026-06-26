@@ -254,7 +254,7 @@ export default function PerfilPage() {
 
                   <div className="flex items-center justify-between gap-2 sm:gap-3">
                     <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-right">
-                      <span className="min-w-0 text-sm font-medium break-words sm:text-base">
+                      <span className="min-w-0 text-sm font-medium text-foreground break-words sm:text-base">
                         {palpite.casa ?? "A definir"}
                       </span>
                       {palpite.casaEscudo && (
@@ -296,7 +296,7 @@ export default function PerfilPage() {
                           className="shrink-0"
                         />
                       )}
-                      <span className="min-w-0 text-sm font-medium break-words sm:text-base">
+                      <span className="min-w-0 text-sm font-medium text-foreground break-words sm:text-base">
                         {palpite.fora ?? "A definir"}
                       </span>
                     </div>

@@ -38,11 +38,11 @@ export default function Login() {
         className="w-full max-w-sm space-y-5 rounded-2xl border border-violet/20 bg-white/[0.03] p-8 shadow-2xl shadow-violet-strong/20"
       >
         <div className="text-center">
-          <h1 className="font-display text-2xl font-bold tracking-tight">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
             <span aria-hidden>🔮</span>{" "}
-            <span className="bg-gradient-to-r from-violet-light via-gold to-violet-light bg-clip-text text-transparent">
-              Chute do Vidente
-            </span>
+            Chute do{" "}
+            {/* "Vidente" em serif itálico dourado, como no Header e nos Jogos. */}
+            <span className="font-oracle font-medium text-gold">Vidente</span>
           </h1>
           <p className="mt-1 text-sm text-muted">
             A Madame Placar te aguarda 🔮

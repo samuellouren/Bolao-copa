@@ -36,10 +36,6 @@ interface Popular {
   total: number;
 }
 
-// Níveis de "energia mística": rótulo PURAMENTE visual da confiança do palpite.
-// NÃO altera pontuação nem é enviado ao backend — é só um selo lúdico no card.
-const ENERGIAS = ["Palpite", "Intuição", "Premonição"] as const;
-
 // Palpites fecham 5 minutos antes do horário marcado do jogo.
 const ANTECEDENCIA_MINIMA_MS = 5 * 60 * 1000;
 
@@ -112,10 +108,6 @@ export default function Home() {
   const [populares, setPopulares] = useState<
     Record<number, { casa: number; fora: number; total: number }>
   >({});
-
-  // "Energia mística" escolhida por jogo (1=Palpite, 2=Intuição, 3=Premonição).
-  // Estado puramente visual: não vai pro backend nem mexe na pontuação.
-  const [energia, setEnergia] = useState<Record<number, number>>({});
 
   // "Relógio" que avança de segundo em segundo para a contagem regressiva e
   // para reavaliar quais jogos já encerraram, sem recarregar a página.
@@ -543,44 +535,6 @@ export default function Home() {
                       </span>
                     </div>
                   )}
-
-                  <div className="h-px bg-white/[0.07]" />
-
-                  {/* Energia mística: selo de confiança (visual, sem pontuação) */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className="shrink-0 text-[11px] text-muted"
-                      title="Só por diversão — não altera a pontuação."
-                    >
-                      energia mística
-                    </span>
-                    <div className="flex flex-wrap justify-end gap-1.5">
-                      {ENERGIAS.map((rotulo, i) => {
-                        const nivel = i + 1;
-                        const ativo = energia[jogo.id] === nivel;
-                        return (
-                          <button
-                            key={rotulo}
-                            type="button"
-                            onClick={() =>
-                              setEnergia((prev) => ({
-                                ...prev,
-                                [jogo.id]: prev[jogo.id] === nivel ? 0 : nivel,
-                              }))
-                            }
-                            aria-pressed={ativo}
-                            className={`rounded-full border px-2.5 py-1 text-[10.5px] font-semibold transition-all ${
-                              ativo
-                                ? "border-gold bg-gold text-[#1a1330] shadow-[0_0_14px_rgba(242,193,78,0.4)]"
-                                : "border-white/[0.14] bg-white/[0.04] text-[#a3a7d4] hover:border-gold/40 hover:text-lav"
-                            }`}
-                          >
-                            {rotulo}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
               );
             })}
